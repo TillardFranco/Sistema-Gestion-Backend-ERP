@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @ControllerAdvice
@@ -14,25 +16,38 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<MensajeResponse> handleResourceNotFoundException (NotFoundException ex) {
-        MensajeResponse response = MensajeResponse.builder()
-                .mensaje(ex.getMessage())
-                .object(null)
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        HttpStatus notFoundResponse = HttpStatus.NOT_FOUND;
+        MensajeResponse response = new MensajeResponse(
+                notFoundResponse,
+                ex.getMessage(),
+                ZonedDateTime.now(ZoneId.of("Z")));
+        return new ResponseEntity<>(response, notFoundResponse);
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<MensajeResponse> handleBadRequestException (BadRequestException ex) {
-        MensajeResponse response = MensajeResponse.builder()
-                .mensaje(ex.getMessage())
-                .object(null)
-                .build();
+        MensajeResponse response = new MensajeResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                ZonedDateTime.now(ZoneId.of("Z")));
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDetails> handleGenericException (Exception ex) {
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), "Error en el servidor");
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<MensajeResponse> handleGenericException (Exception ex) {
+        MensajeResponse response = new MensajeResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.getMessage(),
+                ZonedDateTime.now(ZoneId.of("Z")));
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<MensajeResponse> handleDataAccesException (DataAccessException ex) {
+        MensajeResponse response = new MensajeResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                ZonedDateTime.now(ZoneId.of("Z")));
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

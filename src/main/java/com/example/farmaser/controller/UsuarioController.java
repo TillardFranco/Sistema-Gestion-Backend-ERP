@@ -1,6 +1,7 @@
 package com.example.farmaser.controller;
 
 
+import com.example.farmaser.exceptions.BadRequestException;
 import com.example.farmaser.mapper.UsuarioMapper;
 import com.example.farmaser.model.dto.UsuarioDto;
 import com.example.farmaser.model.entity.Usuario;
@@ -26,96 +27,28 @@ public class UsuarioController {
     private UsuarioMapper usuarioMapper;
 
     @GetMapping("usuarios")
-    public ResponseEntity<?> showAll() {
-        List<UsuarioDto> getList = usuarioService.listAll();
-
-        if (getList.isEmpty()) {
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje("no hay registros")
-                            .object(null)
-                            .build()
-                    , HttpStatus.OK);
-
-        }
-        return new ResponseEntity<>(
-                MensajeResponse.builder()
-                        .mensaje("")
-                        .object(getList)
-                        .build()
-                , HttpStatus.OK);
+    public List<UsuarioDto> showAll() {
+        return usuarioService.listAll();
     }
 
     @PostMapping("usuario")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> create(@RequestBody UsuarioDto usuarioDto){
-        Usuario usuarioSave = null;
-        try {
-            usuarioSave = usuarioService.save(usuarioDto);
-            return new ResponseEntity<>(MensajeResponse.builder()
-                    .mensaje("usuario creado correctamente")
-                    .object(usuarioMapper.usuarioToUsuarioDto(usuarioSave))
-                    .build()
-                    , HttpStatus.CREATED);
-        } catch (DataAccessException exDt){
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje(exDt.getMessage())
-                            .object(null)
-                            .build()
-                    , HttpStatus.METHOD_NOT_ALLOWED);
-        }
+    public UsuarioDto create(@RequestBody UsuarioDto usuarioDto) {
+        return usuarioMapper.usuarioToUsuarioDto(usuarioService.save(usuarioDto));
     }
-    @PutMapping("usuario")
-    public ResponseEntity<?> update(@RequestBody UsuarioDto usuarioDto){
-        Usuario usuarioUpdate = null;
-        try {
-            usuarioUpdate = usuarioService.save(usuarioDto);
-            return new ResponseEntity<>(MensajeResponse.builder()
-                    .mensaje("Cliente actualizado correctamente")
-                    .object(usuarioMapper.usuarioToUsuarioDto(usuarioUpdate))
-                    .build()
-                    , HttpStatus.CREATED);
-        }catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje(exDt.getMessage())
-                            .object(null)
-                            .build()
-                    , HttpStatus.METHOD_NOT_ALLOWED);
-        }
+
+    @PutMapping("usuario/{id}")
+    public UsuarioDto update(@PathVariable Integer id, @RequestBody UsuarioDto usuarioDto) {
+        UsuarioDto usuarioUpdate = usuarioService.update(id, usuarioDto);
+        return usuarioMapper.usuarioToUsuarioDto(usuarioService.save(usuarioDto));
     }
 
     @DeleteMapping("usuario/{id}")
-    public ResponseEntity<?> delete(@PathVariable Integer id){
-        try {
-            UsuarioDto usuarioDto = usuarioService.findById(id);
-            if (usuarioDto == null) {
-                return new ResponseEntity<>(MensajeResponse.builder()
-                        .mensaje("El usuario no existe en la base de datos")
-                        .object(null)
-                        .build()
-                        , HttpStatus.NOT_FOUND);
-            }
-            Usuario usuarioDelete = usuarioMapper.usuarioDtoToUsuario(usuarioDto);
-            usuarioService.delete(usuarioDelete);
-            return new ResponseEntity<>(MensajeResponse.builder()
-                    .mensaje("Usuario eliminado correctamente")
-                    .object(null)
-                    .build(), HttpStatus.NO_CONTENT);
-
-        } catch (DataAccessException exDt) {
-            return new ResponseEntity<>(
-                    MensajeResponse.builder()
-                            .mensaje(exDt.getMessage())
-                            .object(null)
-                            .build()
-                    , HttpStatus.METHOD_NOT_ALLOWED);
-        }
+    public void delete(@PathVariable Integer id) {
+        usuarioService.delete(id);
     }
 
     @GetMapping("usuario/{id}")
-    public ResponseEntity<UsuarioDto> findById(@PathVariable Integer id) {
-        return new ResponseEntity<>(usuarioService.findById(id), HttpStatus.OK);
+    public UsuarioDto findById(@PathVariable Integer id) {
+        return usuarioService.findById(id);
     }
 }

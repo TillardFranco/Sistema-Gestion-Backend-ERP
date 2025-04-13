@@ -6,6 +6,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface UsuarioMapper {
     UsuarioMapper INSTANCE = Mappers.getMapper(UsuarioMapper.class);
@@ -14,4 +16,6 @@ public interface UsuarioMapper {
     UsuarioDto usuarioToUsuarioDto(Usuario usuario);
 
     Usuario usuarioDtoToUsuario(UsuarioDto usuarioDto);
+
+    List<UsuarioDto> toUsuarioDtoList(List<Usuario> usuarios);
 }

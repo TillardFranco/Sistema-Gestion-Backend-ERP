@@ -11,13 +11,13 @@ import java.sql.Timestamp;
 @Data
 @ToString
 @Builder
-public class UsuarioDto implements Serializable {
+public class UserDto implements Serializable {
 
     private Integer id;
-    private String nombre;
-    private String apellido;
+    private String name;
+    private String lastname;
     private String email;
-    private String contraseña;
+    private String password;
     private Timestamp fechaCreacion;
     private ERol rol;
 }

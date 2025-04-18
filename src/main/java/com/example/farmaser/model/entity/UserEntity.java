@@ -12,32 +12,32 @@ import java.sql.Timestamp;
 @ToString
 @Builder
 @Entity
-@Table(name = "usuario")
-public class Usuario implements Serializable {
+@Table(name = "user")
+public class UserEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "nombre", nullable = false, length = 100)
-    private String nombre;
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
 
-    @Column(name = "apellido", nullable = false, length = 100)
-    private String apellido;
+    @Column(name = "lastname", nullable = false, length = 100)
+    private String lastname;
 
     @Column(name = "email", unique = true, nullable = false, length = 100)
     private String email;
 
-    @Column(name = "contraseña", nullable = false, length = 255)
-    private String contraseña;
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
 
     @Column(name = "fecha_creacion", updatable = false)
     private Timestamp fechaCreacion;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false)
-    private ERol rol = ERol.INVITADO;
+    private ERol rol = ERol.INVITED;
 
     /*@OneToMany(mappedBy = "usuarios", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<pedido> pedidos = new HashSet<>();

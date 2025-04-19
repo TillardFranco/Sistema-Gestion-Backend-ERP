@@ -1,19 +1,21 @@
 package com.example.farmaser.service;
 
-import com.example.farmaser.model.dto.UserDto;
+import com.example.farmaser.model.dto.userDto.UserRequestDto;
+import com.example.farmaser.model.dto.userDto.UserResponseDto;
 import com.example.farmaser.model.entity.UserEntity;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface IUser {
 
-    List<UserDto> listAll();
+    List<UserResponseDto> listAll();
 
-    UserEntity save(UserDto user);
+    UserResponseDto save(UserRequestDto userRequestDto);
 
-    UserDto update(Integer id, UserDto userDto);
+    UserResponseDto update(String email, UserRequestDto userRequestDto);
 
-    UserDto findById(Integer id);
+    UserResponseDto findByEmail(String email);
 
-    void delete(Integer id);
+    void delete(String email);
 }

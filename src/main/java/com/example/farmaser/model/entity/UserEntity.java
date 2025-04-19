@@ -2,9 +2,13 @@ package com.example.farmaser.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -16,9 +20,10 @@ import java.sql.Timestamp;
 public class UserEntity implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(name = "id")
-    private Integer id;
+    // @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private UUID id;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -32,15 +37,12 @@ public class UserEntity implements Serializable {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "fecha_creacion", updatable = false)
-    private Timestamp fechaCreacion;
+    @Column(name = "creation_date", updatable = false)
+    @CreationTimestamp
+    private Timestamp creationDate;
 
-    @Enumerated(EnumType.STRING)
+    /*@Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false)
-    private ERol rol = ERol.INVITED;
-
-    /*@OneToMany(mappedBy = "usuarios", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<pedido> pedidos = new HashSet<>();
-    */
+    private ERol rol = ERol.INVITED;*/
 
 }

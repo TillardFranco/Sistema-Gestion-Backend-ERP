@@ -1,8 +1,11 @@
 package com.example.farmaser.controller;
 
 
-import com.example.farmaser.mapper.UserMapper;
-import com.example.farmaser.model.dto.UserDto;
+import com.example.farmaser.mapper.userMapper.UserListMapper;
+import com.example.farmaser.mapper.userMapper.UserRequestMapper;
+import com.example.farmaser.mapper.userMapper.UserResponseMapper;
+import com.example.farmaser.model.dto.userDto.UserRequestDto;
+import com.example.farmaser.model.dto.userDto.UserResponseDto;
 import com.example.farmaser.service.impl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,31 +20,36 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private UserMapper userMapper;
+    private UserResponseMapper userResponseMapper;
+
+    @Autowired
+    private UserRequestMapper userRequestMapper;
+
+    @Autowired
+    private UserListMapper userListMapper;
 
     @GetMapping("usuarios")
-    public List<UserDto> showAll() {
+    public List<UserResponseDto> showAll() {
         return userService.listAll();
     }
 
     @PostMapping("usuario")
-    public UserDto create(@RequestBody UserDto userDto) {
-        return userMapper.userToUserDto(userService.save(userDto));
+    public UserResponseDto create(@RequestBody UserRequestDto userRequestDto) {
+        return userService.save(userRequestDto);
     }
 
     @PutMapping("usuario/{id}")
-    public UserDto update(@PathVariable Integer id, @RequestBody UserDto userDto) {
-        UserDto usuarioUpdate = userService.update(id, userDto);
-        return userMapper.userToUserDto(userService.save(userDto));
+    public UserResponseDto update(@PathVariable String email, @RequestBody UserRequestDto userRequestDto) {
+        return userService.update(email, userRequestDto);
     }
 
-    @DeleteMapping("usuario/{id}")
-    public void delete(@PathVariable Integer id) {
-        userService.delete(id);
+    @DeleteMapping("usuario/{email}")
+    public void delete(@PathVariable String email) {
+        userService.delete(email);
     }
 
-    @GetMapping("usuario/{id}")
-    public UserDto findById(@PathVariable Integer id) {
-        return userService.findById(id);
+    @GetMapping("usuario/{email}")
+    public UserResponseDto findByEmail(@PathVariable String email) {
+        return userService.findByEmail(email);
     }
 }

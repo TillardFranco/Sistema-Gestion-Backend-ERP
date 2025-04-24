@@ -1,6 +1,4 @@
 package com.example.farmaser.model.entity;
 
-public enum ERole {
-    USER,
-    ADMIN,
+public class ProductEntity {
 }

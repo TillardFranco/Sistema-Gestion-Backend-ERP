@@ -6,12 +6,11 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 
 @Data
 @ToString
 @Builder
-public class ResponseProductDto implements Serializable {
+public class ProductResponseDto implements Serializable {
 
     private String barcode;
     private String name;

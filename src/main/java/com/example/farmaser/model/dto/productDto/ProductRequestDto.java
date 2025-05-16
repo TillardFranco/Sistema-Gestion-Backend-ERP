@@ -11,7 +11,7 @@ import java.util.Date;
 @Data
 @ToString
 @Builder
-public class RequestProductDto implements Serializable {
+public class ProductRequestDto implements Serializable {
 
     private String barcode;
     private String name;

@@ -3,10 +3,11 @@ package com.example.farmaser.controller;
 import com.example.farmaser.model.dto.userDto.UserResponseDto;
 import com.example.farmaser.service.impl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -18,5 +19,16 @@ public class AdminController {
     @PostMapping("/promote/{email}")
     public UserResponseDto promoteToAdmin(@PathVariable String email) {
         return userService.promoteToAdmin(email);
+    }
+
+    @GetMapping("/hash/{password}")
+    public Map<String, String> generateHash(@PathVariable String password) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hash = encoder.encode(password);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("password", password);
+        response.put("hash", hash);
+        return response;
     }
 }

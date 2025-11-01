@@ -48,10 +48,10 @@ public class UserService implements IUser {
     @Transactional
     @Override
     public List<UserResponseDto> listAll() {
-            List<UserEntity> userEntities = StreamSupport.stream(
-                            userRepository.findAll().spliterator(), false)
-                    .collect(Collectors.toList());
-            return userListMapper.userEntityToUserDtoList(userEntities);
+        List<UserEntity> userEntities = StreamSupport.stream(
+                        userRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
+        return userListMapper.userEntityToUserDtoList(userEntities);
     }
 
     @Transactional
@@ -98,8 +98,8 @@ public class UserService implements IUser {
     @Transactional
     @Override
     public void delete(String email) {
-            userRepository.delete(userRepository.findByEmail(email)
-                    .orElseThrow(()-> new NotFoundException("No se encontro el usuario")));
+        userRepository.delete(userRepository.findByEmail(email)
+                .orElseThrow(()-> new NotFoundException("No se encontro el usuario")));
     }
 
     @Transactional

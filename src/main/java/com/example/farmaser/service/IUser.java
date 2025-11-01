@@ -5,7 +5,6 @@ import com.example.farmaser.model.dto.userDto.UserResponseDto;
 import com.example.farmaser.model.entity.UserEntity;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface IUser {
 

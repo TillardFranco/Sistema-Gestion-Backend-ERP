@@ -16,7 +16,7 @@ public class ProductResponseDto implements Serializable {
     private String name;
     private String description;
     private BigDecimal price;
-    private String image_url;
+    private String imageUrl;
     private Integer stock;
 
 }

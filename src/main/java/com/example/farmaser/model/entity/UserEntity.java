@@ -3,14 +3,11 @@ package com.example.farmaser.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -22,10 +19,10 @@ import java.util.UUID;
 public class UserEntity implements Serializable {
 
     @Id
-    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     // @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private UUID id;
+    private Long id;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;

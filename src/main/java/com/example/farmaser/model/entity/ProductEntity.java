@@ -1,13 +1,10 @@
 package com.example.farmaser.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Date;
 
 @Data
@@ -29,24 +26,24 @@ public class ProductEntity implements Serializable {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
     @Column(name = "image_url", length = 255)
-    private String image_url;
+    private String imageUrl;
 
     @Column(name = "stock", nullable = false)
     private Integer stock;
 
-    @Column(name = "creation_Date")
+    @Column(name = "creation_date")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date creation_date;
+    private Date creationDate;
 
     @Column(name = "expiration_date")
     @Temporal(TemporalType.DATE)
-    private Date expiration_date;
+    private Date expirationDate;
 
 }

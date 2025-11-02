@@ -2,6 +2,8 @@ package com.example.farmaser.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -38,12 +40,34 @@ public class ProductEntity implements Serializable {
     @Column(name = "stock", nullable = false)
     private Integer stock;
 
-    @Column(name = "creation_date")
+    @Column(name = "minimum_stock")
+    private Integer minimumStock;
+
+    @Column(name = "active", nullable = false)
+    @Builder.Default
+    private Boolean active = true;
+
+    @Column(name = "creation_date", updatable = false)
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
+
+    @Column(name = "last_modified_date")
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastModifiedDate;
 
     @Column(name = "expiration_date")
     @Temporal(TemporalType.DATE)
     private Date expirationDate;
+
+    // Relaciones
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private CategoryEntity category;
+
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "supplier_id")
+    // private SupplierEntity supplier;
 
 }

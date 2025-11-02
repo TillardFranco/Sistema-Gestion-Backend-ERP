@@ -35,13 +35,14 @@ public class SecurityConfig {
 
         JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtUtils);
         jwtAuthenticationFilter.setAuthenticationManager(authenticationManager);
-        jwtAuthenticationFilter.setFilterProcessesUrl("/api/v1/login"); //esto es por si queremos cambiarle la ruta en la que se loguea, por defecto es /login
+        jwtAuthenticationFilter.setFilterProcessesUrl("/api/v1/login"); // Ruta para el login/autenticación
 
         return httpSecurity
                 .csrf(config -> config.disable()) //para trabajar con formularios, como no lo hacemos, se desact
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/v1/login").permitAll();
                     auth.requestMatchers("/api/v1/users/**","/api/v1/admin/**").hasRole("ADMIN");
+                    auth.requestMatchers("/api/v1/products/**", "/api/v1/categories/**", "/api/v1/stock/**").authenticated();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> {

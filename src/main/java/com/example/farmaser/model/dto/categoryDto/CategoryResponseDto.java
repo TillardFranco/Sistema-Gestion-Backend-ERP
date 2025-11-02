@@ -1,29 +1,23 @@
-package com.example.farmaser.model.dto.productDto;
+package com.example.farmaser.model.dto.categoryDto;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
 @ToString
 @Builder
-public class ProductResponseDto implements Serializable {
+public class CategoryResponseDto implements Serializable {
 
     private Long id;
-    private String barcode;
     private String name;
     private String description;
-    private BigDecimal price;
-    private String imageUrl;
-    private Integer stock;
-    private Integer minimumStock;
     private Boolean active;
     private Date creationDate;
     private Date lastModifiedDate;
-    private Date expirationDate;
-
 }
+
+

@@ -2,7 +2,17 @@
 
 ## 🎯 Resumen Ejecutivo
 
-**FarmaSer** es un sistema de gestión de farmacia desarrollado en **Spring Boot 3.4.4** con **Java 17**, similar a plataformas como Farmacity. El sistema maneja stock, usuarios, productos, categorías y movimientos de inventario.
+**FarmaSer** es un sistema de gestión de farmacia desarrollado en **Spring Boot 3.4.4** con **Java 17**, similar a plataformas como Farmacity.
+
+**Módulos implementados:**
+
+- ✅ Gestión de usuarios y autenticación JWT
+- ✅ Gestión de productos y categorías
+- ✅ Control de stock e inventario
+- ✅ Gestión de clientes
+- ✅ Sistema de ventas completo
+
+El sistema permite registrar productos, categorizarlos, controlar su stock, gestionar clientes y procesar ventas con actualización automática de inventario, cálculo de impuestos y cancelación con reversión de stock.
 
 ---
 
@@ -119,63 +129,148 @@
 
 ---
 
-## ❌ Próximas Fases - Por Implementar
+## ✅ Fase 2 - COMPLETADA
 
-### 🎯 FASE 2: Sistema de Ventas y Clientes (PRIORIDAD ALTA)
+### 2.1 Gestión de Clientes ✅
 
-**Esta es la próxima fase crítica del proyecto.**
+**Estado:** Completo e implementado
 
-#### 2.1 Gestión de Clientes
+**Funcionalidades implementadas:**
 
-**Estado:** No implementado
+- ✅ CRUD completo de clientes
+- ✅ Búsqueda por DNI (único)
+- ✅ Búsqueda por nombre y apellido (con y sin paginación)
+- ✅ Búsqueda por email (único)
+- ✅ Paginación en listados
+- ✅ Soft delete (marcar clientes como inactivos)
+- ✅ Validaciones de negocio:
+  - DNI único obligatorio
+  - Email único (opcional pero si se proporciona debe ser único)
+  - Validación de formato de email
+  - Validación de tamaños máximos de campos
 
-**Por implementar:**
+**Endpoints disponibles:**
 
-- [ ] Crear `CustomerEntity` con campos:
-  - `id`, `dni` (unique), `name`, `lastname`, `email`, `phone`, `address`, `city`, `active`, `creationDate`
-- [ ] Crear `CustomerRepository`
-- [ ] Crear DTOs: `CustomerRequestDto`, `CustomerResponseDto`
-- [ ] Crear `CustomerMapper` con MapStruct
-- [ ] Crear `ICustomer` (interfaz)
-- [ ] Crear `CustomerService` con:
-  - CRUD completo
-  - Búsqueda por DNI, nombre, email
-  - Validaciones de negocio
-- [ ] Crear `CustomerController` con endpoints CRUD
-- [ ] Actualizar `SecurityConfig` con permisos para clientes
+- `GET /api/v1/customers` - Listado con paginación
+- `GET /api/v1/customers/all` - Listado sin paginación
+- `GET /api/v1/customers/{dni}` - Buscar por DNI
+- `GET /api/v1/customers/search?name={term}` - Búsqueda por nombre con paginación
+- `GET /api/v1/customers/search/all?name={term}` - Búsqueda por nombre sin paginación
+- `GET /api/v1/customers/search/email?email={term}` - Búsqueda por email con paginación
+- `GET /api/v1/customers/search/email/all?email={term}` - Búsqueda por email sin paginación
+- `POST /api/v1/customers` - Crear cliente
+- `PUT /api/v1/customers/{id}` - Actualizar cliente
+- `DELETE /api/v1/customers/{id}` - Soft delete
 
-#### 2.2 Sistema de Ventas
+**Entidad CustomerEntity:**
 
-**Estado:** No implementado
+- Campos: `id`, `dni` (unique, not null), `name`, `lastname`, `email` (unique, opcional), `phone`, `address`, `city`, `active`, `creationDate`
+- Sin relaciones con otras entidades (independiente)
 
-**Por implementar:**
+**Repositorio CustomerRepository:**
 
-- [ ] Crear `SaleEntity` con campos:
-  - `id`, `saleNumber` (unique, auto-generado), `customerId`, `userId`, `date`, `subtotal`, `tax`, `total`, `paymentMethod`, `status`
-- [ ] Crear `SaleItemEntity` con campos:
-  - `id`, `saleId`, `productId`, `quantity`, `unitPrice`, `subtotal`
-- [ ] Crear enum `PaymentMethod` (CASH, CARD, TRANSFER)
-- [ ] Crear enum `SaleStatus` (PENDING, COMPLETED, CANCELLED)
-- [ ] Crear `SaleRepository`, `SaleItemRepository`
-- [ ] Crear DTOs:
-  - `SaleRequestDto` (con lista de items)
-  - `SaleResponseDto`
-  - `SaleItemRequestDto`, `SaleItemResponseDto`
-- [ ] Crear `SaleMapper` con MapStruct
-- [ ] Crear `ISale` (interfaz)
-- [ ] Crear `SaleService` con:
-  - Validar stock disponible antes de vender
-  - Calcular totales automáticamente
-  - Actualizar stock de productos al completar venta
-  - Generar número de venta único
-  - Generar recibo/ticket (PDF futuro)
-- [ ] Crear `SaleController` con endpoints:
-  - `POST /api/v1/sales` - Crear venta
-  - `GET /api/v1/sales` - Listar ventas (con filtros y paginación)
-  - `GET /api/v1/sales/{id}` - Obtener venta con items
-  - `PATCH /api/v1/sales/{id}/cancel` - Cancelar venta
-  - `GET /api/v1/sales/reports/daily` - Reporte diario
-  - `GET /api/v1/sales/reports/by-date-range` - Reporte por rango
+- Extiende `PagingAndSortingRepository` y `CrudRepository`
+- Métodos: `findByDni`, `existsByDni`, `existsByEmail`, `existsByEmailAndIdNot`, `findByActiveTrue`, búsquedas por nombre y email
+
+---
+
+### 2.2 Sistema de Ventas ✅
+
+**Estado:** Completo e implementado
+
+**Funcionalidades implementadas:**
+
+- ✅ Creación de ventas con múltiples items
+- ✅ Validación de stock disponible antes de vender
+- ✅ Cálculo automático de subtotales, impuestos (IVA 21%) y totales
+- ✅ Actualización automática de stock al completar venta
+- ✅ Reversión de stock al cancelar venta
+- ✅ Generación de número de venta único (formato: S-XXXXXXXX)
+- ✅ Paginación en listados de ventas
+- ✅ Filtros por estado de venta (PENDING, COMPLETED, CANCELLED)
+- ✅ Búsqueda por número de venta
+- ✅ Reporte por rango de fechas
+- ✅ Cancelación de ventas con validaciones
+
+**Endpoints disponibles:**
+
+- `POST /api/v1/sales` - Crear venta
+- `GET /api/v1/sales` - Listar ventas con paginación
+- `GET /api/v1/sales/status/{status}` - Filtrar ventas por estado
+- `GET /api/v1/sales/search/by-sale-number/{saleNumber}` - Buscar por número de venta
+- `GET /api/v1/sales/reports/by-date-range?start={date}&end={date}` - Reporte por rango de fechas
+- `PATCH /api/v1/sales/{id}/cancel` - Cancelar venta
+
+**Entidades:**
+
+**SaleEntity:**
+
+- Campos: `id`, `saleNumber` (unique, auto-generado), `customer` (ManyToOne), `user` (ManyToOne), `date`, `subtotal`, `tax` (IVA 21%), `total`, `paymentMethod`, `status`, `items` (OneToMany)
+- Relaciones: CustomerEntity, UserEntity, List<SaleItemEntity>
+
+**SaleItemEntity:**
+
+- Campos: `id`, `sale` (ManyToOne), `product` (ManyToOne), `quantity`, `unitPrice`, `subtotal`
+- Relaciones: SaleEntity, ProductEntity
+
+**Enums:**
+
+**PaymentMethod:**
+
+- `CASH` - Efectivo
+- `CARD` - Tarjeta
+- `TRANSFER` - Transferencia
+
+**SaleStatus:**
+
+- `PENDING` - Pendiente
+- `COMPLETED` - Completada
+- `CANCELLED` - Cancelada
+
+**Repositorios:**
+
+**SaleRepository:**
+
+- Extiende `PagingAndSortingRepository` y `CrudRepository`
+- Métodos: `findBySaleNumber`, `findByStatus`, `findByDateBetween`
+
+**SaleItemRepository:**
+
+- Extiende `CrudRepository`
+- Métodos: `findBySale`
+
+**Lógica de Negocio (SaleService):**
+
+1. **Creación de venta:**
+
+   - Valida que existan items en la venta
+   - Valida que el cliente exista
+   - Valida que el usuario (vendedor) exista
+   - Valida stock disponible para cada producto
+   - Calcula subtotales de cada item
+   - Calcula subtotal general
+   - Calcula impuestos (IVA 21%)
+   - Calcula total final
+   - Genera número de venta único
+   - Guarda la venta con status COMPLETED
+   - Crea los items de venta
+   - Actualiza stock de cada producto (reduce stock)
+   - Retorna venta completa con items
+
+2. **Cancelación de venta:**
+
+   - Valida que la venta exista
+   - Valida que no esté ya cancelada
+   - Recupera todos los items de la venta
+   - Revierte el stock de cada producto (aumenta stock)
+   - Marca la venta como CANCELLED
+   - Retorna venta actualizada
+
+3. **Búsquedas y filtros:**
+   - Listado paginado de todas las ventas
+   - Filtrado por estado con paginación
+   - Búsqueda por número de venta
+   - Reporte por rango de fechas con paginación
 
 ---
 
@@ -227,28 +322,80 @@ src/main/java/com/example/farmaser/
 ├── controller/
 │   ├── AdminController.java
 │   ├── CategoryController.java
+│   ├── CustomerController.java      ✅ Fase 2.1
 │   ├── ProductController.java
+│   ├── SaleController.java          ✅ Fase 2.2
 │   ├── StockMovementController.java
 │   └── UserController.java
 ├── exceptions/
 │   └── (manejo global de excepciones)
 ├── mapper/
 │   ├── categoryMapper/
+│   ├── customerMapper/               ✅ Fase 2.1
+│   │   ├── CustomerRequestMapper.java
+│   │   ├── CustomerResponseMapper.java
+│   │   └── CustomerListMapper.java
 │   ├── productMapper/
+│   ├── saleMapper/                   ✅ Fase 2.2
+│   │   ├── SaleItemRequestMapper.java
+│   │   ├── SaleItemResponseMapper.java
+│   │   └── SaleResponseMapper.java
 │   ├── stockMapper/
 │   └── userMapper/
 ├── model/
 │   ├── dto/
+│   │   ├── categoryDto/
+│   │   ├── customerDto/              ✅ Fase 2.1
+│   │   │   ├── CustomerRequestDto.java
+│   │   │   └── CustomerResponseDto.java
+│   │   ├── productDto/
+│   │   ├── saleDto/                  ✅ Fase 2.2
+│   │   │   ├── SaleRequestDto.java
+│   │   │   ├── SaleResponseDto.java
+│   │   │   ├── SaleItemRequestDto.java
+│   │   │   └── SaleItemResponseDto.java
+│   │   ├── stockDto/
+│   │   └── userDto/
 │   ├── entity/
+│   │   ├── CategoryEntity.java
+│   │   ├── CustomerEntity.java       ✅ Fase 2.1
+│   │   ├── MovementType.java
+│   │   ├── PaymentMethod.java        ✅ Fase 2.2
+│   │   ├── ProductEntity.java
+│   │   ├── RoleEntity.java
+│   │   ├── SaleEntity.java           ✅ Fase 2.2
+│   │   ├── SaleItemEntity.java       ✅ Fase 2.2
+│   │   ├── SaleStatus.java           ✅ Fase 2.2
+│   │   ├── StockMovementEntity.java
+│   │   └── UserEntity.java
 │   ├── payload/
 │   └── repository/
+│       ├── CategoryRepository.java
+│       ├── CustomerRepository.java   ✅ Fase 2.1
+│       ├── ProductRepository.java
+│       ├── RoleRepository.java
+│       ├── SaleItemRepository.java    ✅ Fase 2.2
+│       ├── SaleRepository.java        ✅ Fase 2.2
+│       ├── StockMovementRepository.java
+│       └── UserRepository.java
 ├── security/
 │   ├── filter/
 │   ├── jwt/
-│   └── SecurityConfig.java
+│   └── SecurityConfig.java (actualizado para /api/v1/customers/** y /api/v1/sales/**)
 └── service/
-    ├── impl/
-    └── (interfaces de servicios)
+    ├── ICustomer.java                 ✅ Fase 2.1
+    ├── IProduct.java
+    ├── ISale.java                     ✅ Fase 2.2
+    ├── IStockMovement.java
+    ├── IUser.java
+    └── impl/
+        ├── CategoryService.java
+        ├── CustomerService.java       ✅ Fase 2.1
+        ├── ProductService.java
+        ├── SaleService.java           ✅ Fase 2.2
+        ├── StockMovementService.java
+        ├── UserDetailsServiceImpl.java
+        └── UserService.java
 ```
 
 ---
@@ -257,16 +404,11 @@ src/main/java/com/example/farmaser/
 
 ### Inmediatos (Sprint Actual):
 
-1. **Implementar Fase 2.1: Gestión de Clientes**
-
-   - Crear entidad, repositorio, DTOs, mappers, servicio y controlador
+1. **Testing de Fase 2 (Ventas y Clientes)**
+   - Probar todos los endpoints de clientes
+   - Probar flujo completo de ventas
+   - Validar integración con stock
    - Tiempo estimado: 2-3 días
-
-2. **Implementar Fase 2.2: Sistema de Ventas**
-   - Crear entidades de venta e items
-   - Implementar lógica de negocio completa
-   - Integrar con stock existente
-   - Tiempo estimado: 1 semana
 
 ### Corto Plazo (Próximo Sprint):
 
@@ -316,14 +458,61 @@ src/main/java/com/example/farmaser/
 
 ## ⚠️ Notas Importantes
 
-1. El sistema está listo para continuar con la Fase 2 (Ventas y Clientes)
-2. La Fase 1 está completamente funcional y probada
-3. Se requiere implementar clientes antes de ventas (dependencia)
-4. Considerar implementar pruebas unitarias e integración
-5. Evaluar agregar Swagger/OpenAPI para documentación de API
-6. Considerar migraciones de BD con Flyway/Liquibase para producción
+1. ✅ **Fase 2 completada:** Sistema de Clientes y Ventas totalmente funcional
+2. ✅ **Fase 1 completamente funcional:** Productos, Categorías y Control de Stock
+3. **Flujo de Ventas:**
+   - Las ventas se crean automáticamente con status COMPLETED
+   - El stock se actualiza automáticamente al crear una venta
+   - Al cancelar una venta, el stock se revierte automáticamente
+   - El IVA está configurado en 21% (ajustable en SaleService)
+4. **Validaciones implementadas:**
+   - DNI y Email únicos en clientes
+   - Validación de stock antes de vender
+   - Validación de cantidades positivas
+5. **Consideraciones futuras:**
+   - Implementar pruebas unitarias e integración
+   - Evaluar agregar Swagger/OpenAPI para documentación de API
+   - Considerar migraciones de BD con Flyway/Liquibase para producción
+   - Generación de recibos/tickets en PDF (pendiente)
 
 ---
 
-**Última actualización:** Basado en análisis del código y COMMIT_MESSAGE.md
-**Estado general:** ✅ Fase 1 completa | ⏳ Listo para Fase 2
+## 🔄 Flujo de Trabajo Típico
+
+### Escenario: Realizar una Venta
+
+1. **Crear/Verificar Cliente:**
+
+   - `POST /api/v1/customers` o `GET /api/v1/customers/{dni}`
+
+2. **Verificar Productos Disponibles:**
+
+   - `GET /api/v1/products` o `GET /api/v1/products/{barcode}`
+
+3. **Crear Venta:**
+
+   - `POST /api/v1/sales` con:
+     - `customerId`: ID del cliente
+     - `paymentMethod`: CASH, CARD o TRANSFER
+     - `items`: Array con `productId`, `quantity`, `unitPrice`
+
+4. **La venta automáticamente:**
+
+   - Valida stock disponible
+   - Calcula subtotales y totales
+   - Actualiza stock de productos
+   - Genera número de venta único
+   - Retorna venta completa con todos los datos
+
+5. **Consultar Venta:**
+
+   - `GET /api/v1/sales/search/by-sale-number/{saleNumber}`
+
+6. **Si es necesario cancelar:**
+   - `PATCH /api/v1/sales/{id}/cancel`
+   - El stock se revierte automáticamente
+
+---
+
+**Última actualización:** Diciembre 2024
+**Estado general:** ✅ Fase 1 completa | ✅ Fase 2 completa | ⏳ Listo para Fase 3 (Reservas)

@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/v1/login").permitAll();
                     auth.requestMatchers("/api/v1/users/**","/api/v1/admin/**").hasRole("ADMIN");
-                    auth.requestMatchers("/api/v1/products/**", "/api/v1/categories/**", "/api/v1/stock/**", "/api/v1/customers/**").authenticated();
+                    auth.requestMatchers("/api/v1/products/**", "/api/v1/categories/**", "/api/v1/stock/**", "/api/v1/customers/**", "/api/v1/sales/**").authenticated();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> {

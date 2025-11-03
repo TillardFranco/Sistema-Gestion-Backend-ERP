@@ -2,30 +2,33 @@
 
 ## 📊 Estado Actual del Proyecto
 
-### ✅ **Ya Implementado:**
+### ✅ **Ya Implementado (FASE 1 COMPLETA):**
 
 - ✅ Autenticación JWT (login/register)
 - ✅ Sistema de usuarios con roles (ADMIN, USER)
 - ✅ CRUD completo de usuarios
-- ✅ Entidad ProductEntity (estructura básica)
-- ✅ Interfaz IProduct (sin implementación completa)
+- ✅ **CRUD completo de productos** (ProductService + ProductController)
+- ✅ **Sistema de categorías completo** (CategoryEntity, Service, Controller)
+- ✅ **Control de stock completo** (StockMovementEntity, Service, Controller)
+- ✅ Historial de movimientos de stock
+- ✅ Búsqueda y paginación de productos
+- ✅ Detección de productos con stock bajo
 - ✅ Seguridad configurada con Spring Security
 - ✅ Mappers con MapStruct
 - ✅ Manejo de excepciones global
 - ✅ Base de datos MySQL configurada
 
-### ❌ **Falta Implementar:**
+### ❌ **Falta Implementar (Próximas Fases):**
 
-- ❌ CRUD completo de productos (service y controller)
-- ❌ Sistema de ventas/transacciones
-- ❌ Sistema de reservas
-- ❌ Categorías de productos
-- ❌ Clientes
-- ❌ Proveedores
-- ❌ Historial de movimientos
-- ❌ Notificaciones/alertas
-- ❌ Reportes y estadísticas
-- ❌ Control de stock (ingresos/egresos)
+- ❌ Sistema de ventas/transacciones (FASE 2.2)
+- ❌ Sistema de clientes (FASE 2.1)
+- ❌ Sistema de reservas (FASE 3)
+- ❌ Proveedores (FASE 4)
+- ❌ Sistema de compras (FASE 4)
+- ❌ Notificaciones/alertas (FASE 7)
+- ❌ Reportes y estadísticas (FASE 6)
+- ❌ Ampliación de roles (FASE 5)
+- ❌ Auditoría (FASE 5)
 
 ---
 
@@ -46,29 +49,29 @@ _Prioridad: ALTA | Tiempo estimado: 2-3 semanas_
 - [ ] Implementar `ProductService` con toda la lógica de negocio
 - [ ] Crear `ProductController` con endpoints REST
 - [ ] Agregar validaciones de negocio:
-    - [ ] Validar que el stock no sea negativo
-    - [ ] Validar que el precio sea positivo
-    - [ ] Validar formato de código de barras (si aplica)
+  - [ ] Validar que el stock no sea negativo
+  - [ ] Validar que el precio sea positivo
+  - [ ] Validar formato de código de barras (si aplica)
 - [ ] Implementar búsqueda de productos:
-    - [ ] Por código de barras
-    - [ ] Por nombre (búsqueda parcial)
-    - [ ] Por categoría (futuro)
-    - [ ] Filtros combinados
+  - [ ] Por código de barras
+  - [ ] Por nombre (búsqueda parcial)
+  - [ ] Por categoría (futuro)
+  - [ ] Filtros combinados
 - [ ] Agregar campos faltantes a `ProductEntity`:
-    - [ ] `categoryId` (Foreign Key a CategoryEntity)
-    - [ ] `supplierId` (Foreign Key a SupplierEntity)
-    - [ ] `minimumStock` (stock mínimo antes de alerta)
-    - [ ] `active` (boolean para soft delete)
-    - [ ] `lastModifiedDate` (auditoría)
+  - [ ] `categoryId` (Foreign Key a CategoryEntity)
+  - [ ] `supplierId` (Foreign Key a SupplierEntity)
+  - [ ] `minimumStock` (stock mínimo antes de alerta)
+  - [ ] `active` (boolean para soft delete)
+  - [ ] `lastModifiedDate` (auditoría)
 - [ ] Implementar paginación en listado de productos
 - [ ] Crear endpoints:
-    - [ ] `GET /api/v1/products` - Listar con paginación
-    - [ ] `GET /api/v1/products/{barcode}` - Buscar por código
-    - [ ] `GET /api/v1/products/search?name={name}` - Búsqueda
-    - [ ] `POST /api/v1/products` - Crear
-    - [ ] `PUT /api/v1/products/{barcode}` - Actualizar
-    - [ ] `DELETE /api/v1/products/{barcode}` - Eliminar (soft delete)
-    - [ ] `PATCH /api/v1/products/{barcode}/stock` - Actualizar solo stock
+  - [ ] `GET /api/v1/products` - Listar con paginación
+  - [ ] `GET /api/v1/products/{barcode}` - Buscar por código
+  - [ ] `GET /api/v1/products/search?name={name}` - Búsqueda
+  - [ ] `POST /api/v1/products` - Crear
+  - [ ] `PUT /api/v1/products/{barcode}` - Actualizar
+  - [ ] `DELETE /api/v1/products/{barcode}` - Eliminar (soft delete)
+  - [ ] `PATCH /api/v1/products/{barcode}/stock` - Actualizar solo stock
 
 **Archivos a crear/modificar:**
 
@@ -87,7 +90,7 @@ _Prioridad: ALTA | Tiempo estimado: 2-3 semanas_
 **Tareas:**
 
 - [ ] Crear `CategoryEntity`:
-    - `id`, `name`, `description`, `active`, `creationDate`
+  - `id`, `name`, `description`, `active`, `creationDate`
 - [ ] Crear `CategoryRepository`
 - [ ] Crear DTOs: `CategoryRequestDto`, `CategoryResponseDto`
 - [ ] Crear Mappers: `CategoryMapper`
@@ -96,11 +99,11 @@ _Prioridad: ALTA | Tiempo estimado: 2-3 semanas_
 - [ ] Crear `CategoryController`
 - [ ] Agregar relación ManyToOne en `ProductEntity` → `CategoryEntity`
 - [ ] Endpoints:
-    - [ ] `GET /api/v1/categories` - Listar categorías
-    - [ ] `GET /api/v1/categories/{id}` - Obtener categoría
-    - [ ] `POST /api/v1/categories` - Crear categoría
-    - [ ] `PUT /api/v1/categories/{id}` - Actualizar
-    - [ ] `DELETE /api/v1/categories/{id}` - Eliminar
+  - [ ] `GET /api/v1/categories` - Listar categorías
+  - [ ] `GET /api/v1/categories/{id}` - Obtener categoría
+  - [ ] `POST /api/v1/categories` - Crear categoría
+  - [ ] `PUT /api/v1/categories/{id}` - Actualizar
+  - [ ] `DELETE /api/v1/categories/{id}` - Eliminar
 
 **Archivos a crear:**
 
@@ -121,21 +124,21 @@ _Prioridad: ALTA | Tiempo estimado: 2-3 semanas_
 **Tareas:**
 
 - [ ] Crear `StockMovementEntity`:
-    - `id`, `productId`, `type` (IN/OUT), `quantity`, `reason`, `userId`, `date`, `notes`
+  - `id`, `productId`, `type` (IN/OUT), `quantity`, `reason`, `userId`, `date`, `notes`
 - [ ] Crear enum `MovementType` (IN, OUT, ADJUSTMENT, RETURN)
 - [ ] Crear `StockMovementRepository`
 - [ ] Crear DTOs: `StockMovementRequestDto`, `StockMovementResponseDto`
 - [ ] Crear `IStockMovement` (interfaz)
 - [ ] Crear `StockMovementService`:
-    - [ ] Actualizar stock del producto automáticamente
-    - [ ] Validar que no se pueda hacer egreso si no hay stock suficiente
-    - [ ] Generar alerta si stock baja del mínimo
+  - [ ] Actualizar stock del producto automáticamente
+  - [ ] Validar que no se pueda hacer egreso si no hay stock suficiente
+  - [ ] Generar alerta si stock baja del mínimo
 - [ ] Crear `StockMovementController`
 - [ ] Endpoints:
-    - [ ] `POST /api/v1/stock/entry` - Registrar ingreso
-    - [ ] `POST /api/v1/stock/exit` - Registrar egreso
-    - [ ] `GET /api/v1/stock/movements/{productId}` - Historial de movimientos
-    - [ ] `GET /api/v1/stock/low-stock` - Productos con stock bajo
+  - [ ] `POST /api/v1/stock/entry` - Registrar ingreso
+  - [ ] `POST /api/v1/stock/exit` - Registrar egreso
+  - [ ] `GET /api/v1/stock/movements/{productId}` - Historial de movimientos
+  - [ ] `GET /api/v1/stock/low-stock` - Productos con stock bajo
 
 **Archivos a crear:**
 
@@ -161,7 +164,7 @@ _Prioridad: ALTA | Tiempo estimado: 3-4 semanas_
 **Tareas:**
 
 - [ ] Crear `CustomerEntity`:
-    - `id`, `dni` (unique), `name`, `lastname`, `email`, `phone`, `address`, `city`, `active`, `creationDate`
+  - `id`, `dni` (unique), `name`, `lastname`, `email`, `phone`, `address`, `city`, `active`, `creationDate`
 - [ ] Crear `CustomerRepository`
 - [ ] Crear DTOs y Mappers
 - [ ] Crear `ICustomer` (interfaz)
@@ -189,32 +192,32 @@ _Prioridad: ALTA | Tiempo estimado: 3-4 semanas_
 **Tareas:**
 
 - [ ] Crear `SaleEntity`:
-    - `id`, `saleNumber` (unique, auto-generado), `customerId`, `userId`, `date`, `subtotal`, `tax`, `total`, `paymentMethod`, `status`
+  - `id`, `saleNumber` (unique, auto-generado), `customerId`, `userId`, `date`, `subtotal`, `tax`, `total`, `paymentMethod`, `status`
 - [ ] Crear `SaleItemEntity`:
-    - `id`, `saleId`, `productId`, `quantity`, `unitPrice`, `subtotal`
+  - `id`, `saleId`, `productId`, `quantity`, `unitPrice`, `subtotal`
 - [ ] Crear enum `PaymentMethod` (CASH, CARD, TRANSFER)
 - [ ] Crear enum `SaleStatus` (PENDING, COMPLETED, CANCELLED)
 - [ ] Crear `SaleRepository`, `SaleItemRepository`
 - [ ] Crear DTOs:
-    - `SaleRequestDto` (con lista de items)
-    - `SaleResponseDto`
-    - `SaleItemRequestDto`, `SaleItemResponseDto`
+  - `SaleRequestDto` (con lista de items)
+  - `SaleResponseDto`
+  - `SaleItemRequestDto`, `SaleItemResponseDto`
 - [ ] Crear `ISale` (interfaz)
 - [ ] Crear `SaleService`:
-    - [ ] Validar stock disponible antes de vender
-    - [ ] Calcular totales automáticamente
-    - [ ] Actualizar stock de productos al completar venta
-    - [ ] Generar número de venta único
-    - [ ] Generar recibo/ticket
+  - [ ] Validar stock disponible antes de vender
+  - [ ] Calcular totales automáticamente
+  - [ ] Actualizar stock de productos al completar venta
+  - [ ] Generar número de venta único
+  - [ ] Generar recibo/ticket
 - [ ] Crear `SaleController`
 - [ ] Endpoints:
-    - [ ] `POST /api/v1/sales` - Crear venta
-    - [ ] `GET /api/v1/sales` - Listar ventas (con filtros y paginación)
-    - [ ] `GET /api/v1/sales/{id}` - Obtener venta con items
-    - [ ] `GET /api/v1/sales/{id}/receipt` - Generar recibo PDF
-    - [ ] `PATCH /api/v1/sales/{id}/cancel` - Cancelar venta
-    - [ ] `GET /api/v1/sales/reports/daily` - Reporte diario
-    - [ ] `GET /api/v1/sales/reports/by-date-range` - Reporte por rango
+  - [ ] `POST /api/v1/sales` - Crear venta
+  - [ ] `GET /api/v1/sales` - Listar ventas (con filtros y paginación)
+  - [ ] `GET /api/v1/sales/{id}` - Obtener venta con items
+  - [ ] `GET /api/v1/sales/{id}/receipt` - Generar recibo PDF
+  - [ ] `PATCH /api/v1/sales/{id}/cancel` - Cancelar venta
+  - [ ] `GET /api/v1/sales/reports/daily` - Reporte diario
+  - [ ] `GET /api/v1/sales/reports/by-date-range` - Reporte por rango
 
 **Archivos a crear:**
 
@@ -243,27 +246,27 @@ _Prioridad: MEDIA | Tiempo estimado: 2 semanas_
 **Tareas:**
 
 - [ ] Crear `ReservationEntity`:
-    - `id`, `reservationNumber`, `customerId`, `productId`, `quantity`, `status`, `reservationDate`, `expirationDate`, `notes`
+  - `id`, `reservationNumber`, `customerId`, `productId`, `quantity`, `status`, `reservationDate`, `expirationDate`, `notes`
 - [ ] Crear enum `ReservationStatus` (PENDING, CONFIRMED, COMPLETED, CANCELLED, EXPIRED)
 - [ ] Crear `ReservationRepository`
 - [ ] Crear DTOs y Mappers
 - [ ] Crear `IReservation` (interfacio)
 - [ ] Crear `ReservationService`:
-    - [ ] Validar stock disponible al crear reserva
-    - [ ] Reservar stock automáticamente (restar del disponible)
-    - [ ] Expirar reservas automáticamente después de X días
-    - [ ] Convertir reserva en venta
-    - [ ] Cancelar reserva y liberar stock
+  - [ ] Validar stock disponible al crear reserva
+  - [ ] Reservar stock automáticamente (restar del disponible)
+  - [ ] Expirar reservas automáticamente después de X días
+  - [ ] Convertir reserva en venta
+  - [ ] Cancelar reserva y liberar stock
 - [ ] Crear `ReservationController`
 - [ ] Crear Job programado para expirar reservas
 - [ ] Endpoints:
-    - [ ] `POST /api/v1/reservations` - Crear reserva
-    - [ ] `GET /api/v1/reservations` - Listar reservas
-    - [ ] `GET /api/v1/reservations/{id}` - Obtener reserva
-    - [ ] `PATCH /api/v1/reservations/{id}/confirm` - Confirmar
-    - [ ] `PATCH /api/v1/reservations/{id}/complete` - Completar (convertir en venta)
-    - [ ] `PATCH /api/v1/reservations/{id}/cancel` - Cancelar
-    - [ ] `DELETE /api/v1/reservations/expired` - Eliminar expiradas (job)
+  - [ ] `POST /api/v1/reservations` - Crear reserva
+  - [ ] `GET /api/v1/reservations` - Listar reservas
+  - [ ] `GET /api/v1/reservations/{id}` - Obtener reserva
+  - [ ] `PATCH /api/v1/reservations/{id}/confirm` - Confirmar
+  - [ ] `PATCH /api/v1/reservations/{id}/complete` - Completar (convertir en venta)
+  - [ ] `PATCH /api/v1/reservations/{id}/cancel` - Cancelar
+  - [ ] `DELETE /api/v1/reservations/expired` - Eliminar expiradas (job)
 
 **Archivos a crear:**
 
@@ -290,7 +293,7 @@ _Prioridad: MEDIA | Tiempo estimado: 2-3 semanas_
 **Tareas:**
 
 - [ ] Crear `SupplierEntity`:
-    - `id`, `name`, `cuit` (unique), `email`, `phone`, `address`, `city`, `active`, `creationDate`
+  - `id`, `name`, `cuit` (unique), `email`, `phone`, `address`, `city`, `active`, `creationDate`
 - [ ] Crear `SupplierRepository`
 - [ ] Crear DTOs y Mappers
 - [ ] Crear `ISupplier` (interfaz)
@@ -317,25 +320,25 @@ _Prioridad: MEDIA | Tiempo estimado: 2-3 semanas_
 **Tareas:**
 
 - [ ] Crear `PurchaseEntity`:
-    - `id`, `purchaseNumber`, `supplierId`, `userId`, `date`, `total`, `status`, `invoiceNumber`
+  - `id`, `purchaseNumber`, `supplierId`, `userId`, `date`, `total`, `status`, `invoiceNumber`
 - [ ] Crear `PurchaseItemEntity`:
-    - `id`, `purchaseId`, `productId`, `quantity`, `unitPrice`, `subtotal`
+  - `id`, `purchaseId`, `productId`, `quantity`, `unitPrice`, `subtotal`
 - [ ] Crear enum `PurchaseStatus` (PENDING, COMPLETED, CANCELLED)
 - [ ] Crear `PurchaseRepository`, `PurchaseItemRepository`
 - [ ] Crear DTOs y Mappers
 - [ ] Crear `IPurchase` (interfaz)
 - [ ] Crear `PurchaseService`:
-    - [ ] Crear productos nuevos si no existen
-    - [ ] Actualizar stock automáticamente
-    - [ ] Actualizar precio de compra del producto
-    - [ ] Generar número de compra único
+  - [ ] Crear productos nuevos si no existen
+  - [ ] Actualizar stock automáticamente
+  - [ ] Actualizar precio de compra del producto
+  - [ ] Generar número de compra único
 - [ ] Crear `PurchaseController`
 - [ ] Endpoints:
-    - [ ] `POST /api/v1/purchases` - Crear compra
-    - [ ] `GET /api/v1/purchases` - Listar compras
-    - [ ] `GET /api/v1/purchases/{id}` - Obtener compra
-    - [ ] `PATCH /api/v1/purchases/{id}/complete` - Completar compra
-    - [ ] `GET /api/v1/purchases/reports` - Reportes de compras
+  - [ ] `POST /api/v1/purchases` - Crear compra
+  - [ ] `GET /api/v1/purchases` - Listar compras
+  - [ ] `GET /api/v1/purchases/{id}` - Obtener compra
+  - [ ] `PATCH /api/v1/purchases/{id}/complete` - Completar compra
+  - [ ] `GET /api/v1/purchases/reports` - Reportes de compras
 
 **Archivos a crear:**
 
@@ -363,15 +366,15 @@ _Prioridad: ALTA | Tiempo estimado: 1-2 semanas_
 **Tareas:**
 
 - [ ] Extender `ERole`:
-    - [ ] `PHARMACIST` (Farmacéutico)
-    - [ ] `SELLER` (Vendedor)
-    - [ ] `MANAGER` (Gerente)
-    - [ ] `WAREHOUSE` (Depósito)
+  - [ ] `PHARMACIST` (Farmacéutico)
+  - [ ] `SELLER` (Vendedor)
+  - [ ] `MANAGER` (Gerente)
+  - [ ] `WAREHOUSE` (Depósito)
 - [ ] Actualizar `SecurityConfig` con permisos por rol:
-    - [ ] Farmacéutico: puede ver todo, gestionar productos, ventas
-    - [ ] Vendedor: puede ver productos, crear ventas, clientes
-    - [ ] Gerente: acceso completo + reportes
-    - [ ] Depósito: gestionar stock, compras
+  - [ ] Farmacéutico: puede ver todo, gestionar productos, ventas
+  - [ ] Vendedor: puede ver productos, crear ventas, clientes
+  - [ ] Gerente: acceso completo + reportes
+  - [ ] Depósito: gestionar stock, compras
 - [ ] Agregar anotaciones `@PreAuthorize` en controladores
 - [ ] Actualizar `DataInitializer` con roles iniciales
 
@@ -384,9 +387,9 @@ _Prioridad: ALTA | Tiempo estimado: 1-2 semanas_
 **Tareas:**
 
 - [ ] Agregar campos de auditoría a entidades críticas:
-    - [ ] `createdBy`, `modifiedBy`, `createdDate`, `modifiedDate`
+  - [ ] `createdBy`, `modifiedBy`, `createdDate`, `modifiedDate`
 - [ ] Crear entidad `AuditLog`:
-    - `id`, `entityType`, `entityId`, `action`, `userId`, `oldValue`, `newValue`, `timestamp`
+  - `id`, `entityType`, `entityId`, `action`, `userId`, `oldValue`, `newValue`, `timestamp`
 - [ ] Crear servicio de auditoría
 - [ ] Implementar listeners JPA para auditoría automática
 - [ ] Crear endpoints para consultar logs de auditoría
@@ -442,11 +445,11 @@ _Prioridad: MEDIA | Tiempo estimado: 2-3 semanas_
 **Tareas:**
 
 - [ ] Crear endpoint de dashboard con métricas principales:
-    - [ ] Ventas del día
-    - [ ] Productos con stock bajo
-    - [ ] Reservas pendientes
-    - [ ] Top productos vendidos
-    - [ ] Ingresos del mes
+  - [ ] Ventas del día
+  - [ ] Productos con stock bajo
+  - [ ] Reservas pendientes
+  - [ ] Top productos vendidos
+  - [ ] Ingresos del mes
 - [ ] Endpoint: `GET /api/v1/dashboard`
 
 ---
@@ -460,16 +463,16 @@ _Prioridad: MEDIA | Tiempo estimado: 1-2 semanas_
 **Tareas:**
 
 - [ ] Crear entidad `AlertEntity`:
-    - `id`, `type`, `message`, `read`, `userId`, `date`
+  - `id`, `type`, `message`, `read`, `userId`, `date`
 - [ ] Crear enum `AlertType` (LOW_STOCK, EXPIRING_PRODUCT, RESERVATION_EXPIRING, etc.)
 - [ ] Crear servicio de alertas
 - [ ] Generar alertas automáticas:
-    - [ ] Stock bajo (job programado)
-    - [ ] Productos próximos a vencer (job programado)
-    - [ ] Reservas próximas a expirar
+  - [ ] Stock bajo (job programado)
+  - [ ] Productos próximos a vencer (job programado)
+  - [ ] Reservas próximas a expirar
 - [ ] Endpoints:
-    - [ ] `GET /api/v1/alerts` - Obtener alertas del usuario
-    - [ ] `PATCH /api/v1/alerts/{id}/read` - Marcar como leída
+  - [ ] `GET /api/v1/alerts` - Obtener alertas del usuario
+  - [ ] `PATCH /api/v1/alerts/{id}/read` - Marcar como leída
 
 ---
 
@@ -494,9 +497,9 @@ _Prioridad: BAJA | Tiempo estimado: 2-3 semanas_
 **Tareas:**
 
 - [ ] Implementar caché (Redis) para:
-    - [ ] Lista de productos
-    - [ ] Categorías
-    - [ ] Stock actual
+  - [ ] Lista de productos
+  - [ ] Categorías
+  - [ ] Stock actual
 - [ ] Optimizar consultas con índices en BD
 - [ ] Paginación en todos los listados
 - [ ] Lazy loading donde corresponda

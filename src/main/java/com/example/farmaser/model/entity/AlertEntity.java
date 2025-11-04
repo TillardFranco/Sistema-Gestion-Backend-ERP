@@ -27,7 +27,7 @@ public class AlertEntity implements Serializable {
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
 
-    @Column(name = "read", nullable = false)
+    @Column(name = "is_read", nullable = false)
     @Builder.Default
     private Boolean read = false;
 

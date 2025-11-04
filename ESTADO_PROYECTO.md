@@ -11,8 +11,10 @@
 - ✅ Control de stock e inventario
 - ✅ Gestión de clientes
 - ✅ Sistema de ventas completo
+- ✅ Sistema de reservas con expiración automática
+- ✅ Sistema de alertas de productos próximos a vencer
 
-El sistema permite registrar productos, categorizarlos, controlar su stock, gestionar clientes y procesar ventas con actualización automática de inventario, cálculo de impuestos y cancelación con reversión de stock.
+El sistema permite registrar productos, categorizarlos, controlar su stock, gestionar clientes, procesar ventas con actualización automática de inventario, manejar reservas de productos con expiración automática y conversión en ventas, y recibir alertas automáticas cuando productos están próximos a vencer.
 
 ---
 
@@ -274,11 +276,218 @@ El sistema permite registrar productos, categorizarlos, controlar su stock, gest
 
 ---
 
-### FASE 3: Sistema de Reservas (Prioridad MEDIA)
+## ✅ Fase 3 - COMPLETADA
 
-- Reservas de productos por clientes
-- Gestión de reservas con expiración automática
-- Conversión de reservas en ventas
+### 3.1 Sistema de Reservas ✅
+
+**Estado:** Completo e implementado
+
+**Funcionalidades implementadas:**
+
+- ✅ Creación de reservas con validación de stock
+- ✅ Reserva automática de stock (descuenta stock al crear reserva)
+- ✅ Expiración automática de reservas (7 días, ejecutado cada hora)
+- ✅ Conversión de reserva en venta
+- ✅ Cancelación de reservas con liberación de stock
+- ✅ Confirmación de reservas
+- ✅ Búsqueda por número de reserva
+- ✅ Filtrado por estado
+- ✅ Paginación en listados
+
+**Endpoints disponibles:**
+
+- `POST /api/v1/reservations` - Crear reserva
+- `GET /api/v1/reservations` - Listar reservas con paginación
+- `GET /api/v1/reservations/status/{status}` - Filtrar por estado
+- `GET /api/v1/reservations/{id}` - Obtener reserva por ID
+- `GET /api/v1/reservations/search/by-reservation-number/{number}` - Buscar por número
+- `PATCH /api/v1/reservations/{id}/confirm` - Confirmar reserva
+- `PATCH /api/v1/reservations/{id}/complete` - Completar reserva (convertir en venta)
+- `PATCH /api/v1/reservations/{id}/cancel` - Cancelar reserva
+- `DELETE /api/v1/reservations/expired` - Expirar reservas manualmente (job programado)
+
+**Entidad ReservationEntity:**
+
+- Campos: `id`, `reservationNumber` (unique, auto-generado), `customer` (ManyToOne), `product` (ManyToOne), `quantity`, `status`, `reservationDate`, `expirationDate` (7 días desde creación), `notes`
+- Relaciones: CustomerEntity, ProductEntity
+
+**Enum ReservationStatus:**
+
+- `PENDING` - Pendiente
+- `CONFIRMED` - Confirmada
+- `COMPLETED` - Completada (convertida en venta)
+- `CANCELLED` - Cancelada
+- `EXPIRED` - Expirada
+
+**Repositorio ReservationRepository:**
+
+- Extiende `PagingAndSortingRepository` y `CrudRepository`
+- Métodos: `findByReservationNumber`, `findByStatus`, `findByCustomerId`, `findByProductId`, `findByExpirationDateBeforeAndStatus`
+
+**Lógica de Negocio (ReservationService):**
+
+1. **Creación de reserva:**
+
+   - Valida que el cliente exista
+   - Valida que el producto exista
+   - Valida cantidad mayor a cero
+   - Valida stock disponible suficiente
+   - **Reserva stock automáticamente** (descuenta del stock disponible del producto)
+   - Calcula fecha de expiración (7 días desde la creación)
+   - Genera número de reserva único (formato: R-XXXXXXXX)
+   - Crea la reserva con status PENDING
+   - Retorna reserva completa
+
+2. **Cancelación de reserva:**
+
+   - Valida que la reserva exista
+   - Valida que no esté completada o cancelada
+   - **Libera stock reservado** (devuelve stock al producto)
+   - Marca la reserva como CANCELLED
+   - Retorna reserva actualizada
+
+3. **Confirmación de reserva:**
+
+   - Valida que la reserva esté en estado PENDING
+   - Valida que no haya expirado
+   - Cambia status a CONFIRMED
+   - Retorna reserva actualizada
+
+4. **Completar reserva (convertir en venta):**
+
+   - Valida que la reserva exista y no esté completada/cancelada/expirada
+   - Restaura temporalmente el stock del producto reservado
+   - Crea la venta usando SaleService (que validará y descontará el stock nuevamente)
+   - Marca la reserva como COMPLETED
+   - Retorna reserva actualizada
+
+5. **Expiración automática:**
+   - Job programado ejecutado cada hora (`@Scheduled(cron = "0 0 * * * ?")`)
+   - Busca reservas PENDING o CONFIRMED que hayan pasado su fecha de expiración
+   - **Libera stock de todas las reservas expiradas** (devuelve stock a productos)
+   - Marca reservas como EXPIRED
+   - Logs de ejecución para auditoría
+
+**Scheduler (ReservationScheduler):**
+
+- Componente Spring con `@Scheduled`
+- Ejecuta `expireReservations()` cada hora automáticamente
+- Manejo de errores con logging
+- Habilitado con `@EnableScheduling` en `FarmaserApplication`
+
+**Flujo de Trabajo de Reservas:**
+
+1. **Cliente reserva producto:**
+
+   - Stock se descuenta inmediatamente
+   - Reserva válida por 7 días
+   - Status: PENDING
+
+2. **Confirmar reserva (opcional):**
+
+   - Status cambia a CONFIRMED
+   - Stock sigue reservado
+
+3. **Completar reserva (convertir en venta):**
+
+   - Se crea la venta normal
+   - Stock que ya estaba descontado se maneja correctamente
+   - Status: COMPLETED
+
+4. **Cancelar o expirar:**
+   - Stock se libera y vuelve al producto
+   - Status: CANCELLED o EXPIRED
+
+---
+
+## ✅ Sistema de Alertas de Vencimiento - COMPLETADO
+
+### Funcionalidad: Alertas de Productos Próximos a Vencer ✅
+
+**Estado:** Completo e implementado
+
+**Funcionalidades implementadas:**
+
+- ✅ Detección automática de productos próximos a vencer:
+  - ✅ Alertas con 1 mes de anticipación (28-31 días antes)
+  - ✅ Alertas con 1 semana de anticipación (5-7 días antes)
+  - ✅ Alertas el mismo día de vencimiento (0 días)
+- ✅ Generación automática de alertas diaria (cada día a las 8:00 AM)
+- ✅ Creación de alertas para todos los usuarios del sistema
+- ✅ Prevención de duplicados (no crea alertas si ya existe una no leída del mismo tipo)
+- ✅ Sistema de lectura de alertas (marcar como leída, marcar todas como leídas)
+- ✅ Paginación en listados de alertas
+- ✅ Filtrado de alertas no leídas
+
+**Endpoints disponibles:**
+
+- `GET /api/v1/alerts` - Listar alertas del usuario (paginado)
+- `GET /api/v1/alerts/all` - Listar todas las alertas del usuario
+- `GET /api/v1/alerts/unread` - Listar alertas no leídas (paginado)
+- `GET /api/v1/alerts/unread/all` - Listar todas las alertas no leídas
+- `PATCH /api/v1/alerts/{id}/read` - Marcar alerta como leída
+- `PATCH /api/v1/alerts/read-all` - Marcar todas las alertas como leídas
+
+**Entidad AlertEntity:**
+
+- Campos: `id`, `type` (AlertType enum), `message`, `read` (boolean), `user` (ManyToOne), `product` (ManyToOne), `date`, `expirationDate`
+- Relaciones: UserEntity, ProductEntity
+
+**Enum AlertType:**
+
+- `LOW_STOCK` - Stock bajo (preparado para futuras implementaciones)
+- `EXPIRING_PRODUCT_1_MONTH` - Producto vence en 1 mes
+- `EXPIRING_PRODUCT_1_WEEK` - Producto vence en 1 semana
+- `EXPIRING_PRODUCT_TODAY` - Producto vence hoy
+- `RESERVATION_EXPIRING` - Reserva próxima a expirar (preparado para futuras implementaciones)
+
+**Repositorio AlertRepository:**
+
+- Extiende `PagingAndSortingRepository` y `CrudRepository`
+- Métodos: `findByUserId`, `findByUserIdAndReadFalse`, `findByTypeAndReadFalse`, `existsByProductIdAndTypeAndReadFalse`
+
+**Lógica de Negocio (AlertService):**
+
+1. **Generación de alertas de vencimiento:**
+
+   - Normaliza fechas a medianoche para comparaciones precisas
+   - Calcula días hasta vencimiento para cada producto activo con fecha de vencimiento
+   - **Alertas de 1 mes:** Detecta productos que vencen en 28-31 días
+   - **Alertas de 1 semana:** Detecta productos que vencen en 5-7 días
+   - **Alertas de hoy:** Detecta productos que vencen el mismo día (0 días)
+   - Verifica que no exista una alerta no leída del mismo tipo para evitar duplicados
+   - Crea alertas para todos los usuarios del sistema
+   - Mensajes descriptivos con información del producto y fecha de vencimiento
+
+2. **Gestión de alertas:**
+   - Listado de alertas del usuario con paginación
+   - Filtrado de alertas no leídas
+   - Marcado individual de alertas como leídas
+   - Marcado masivo de todas las alertas como leídas
+
+**Scheduler (ProductExpirationScheduler):**
+
+- Componente Spring con `@Scheduled`
+- Ejecuta `generateExpirationAlerts()` cada día a las 8:00 AM
+- Cron: `"0 0 8 * * ?"` (segundo, minuto, hora, día del mes, mes, día de la semana)
+- Manejo de errores con logging detallado
+- Logs informan cantidad de alertas creadas
+
+**Ejemplo de Mensajes de Alerta:**
+
+- **1 mes:** `"⚠️ PRODUCTO VENCE EN 1 MES: Paracetamol 500mg (Vence: 15/02/2025 - Faltan 30 días)"`
+- **1 semana:** `"⚠️ PRODUCTO VENCE EN 1 SEMANA: Ibuprofeno 400mg (Vence: 20/01/2025 - Faltan 7 días)"`
+- **Hoy:** `"🚨 PRODUCTO VENCE HOY: Aspirina 100mg (Vence: 13/01/2025)"`
+
+**Características Importantes:**
+
+- **Prevención de duplicados:** Solo crea una alerta no leída por producto y tipo
+- **Distribución universal:** Crea alertas para todos los usuarios (vendedores y dueños)
+- **Alerta temprana:** Permite planificar acciones antes de que los productos venzan
+- **Priorización visual:** Emojis diferentes (⚠️ para anticipación, 🚨 para urgencia)
+- **Información completa:** Incluye nombre del producto, fecha de vencimiento y días restantes
+
+---
 
 ### FASE 4: Sistema de Compras y Proveedores (Prioridad MEDIA)
 
@@ -291,13 +500,20 @@ El sistema permite registrar productos, categorizarlos, controlar su stock, gest
 - Roles más granulares (Farmacéutico, Vendedor, Gerente, Depósito)
 - Sistema de auditoría
 
-### FASE 6-9: Reportes, Alertas, Optimizaciones (Prioridad MEDIA/BAJA)
+### FASE 6: Reportes y Analytics (Prioridad MEDIA)
 
 - Reportes y analytics
-- Sistema de alertas
+- Dashboard con métricas
 - Optimizaciones de performance
 - Generación de PDFs
 - Testing
+
+### FASE 7-9: Optimizaciones y Features Avanzadas (Prioridad MEDIA/BAJA)
+
+- Optimizaciones de performance
+- Generación de PDFs
+- Testing
+- Features avanzadas (promociones, fidelidad, etc.)
 
 ---
 
@@ -318,24 +534,33 @@ El sistema permite registrar productos, categorizarlos, controlar su stock, gest
 ```
 src/main/java/com/example/farmaser/
 ├── config/
-│   └── DataInitializer.java
+│   ├── DataInitializer.java
+│   ├── ProductExpirationScheduler.java ✅ Alertas
+│   └── ReservationScheduler.java     ✅ Fase 3
 ├── controller/
 │   ├── AdminController.java
 │   ├── CategoryController.java
 │   ├── CustomerController.java      ✅ Fase 2.1
+│   ├── AlertController.java         ✅ Alertas
 │   ├── ProductController.java
+│   ├── ReservationController.java   ✅ Fase 3
 │   ├── SaleController.java          ✅ Fase 2.2
 │   ├── StockMovementController.java
 │   └── UserController.java
 ├── exceptions/
 │   └── (manejo global de excepciones)
 ├── mapper/
+│   ├── alertMapper/                  ✅ Alertas
+│   │   └── AlertResponseMapper.java
 │   ├── categoryMapper/
 │   ├── customerMapper/               ✅ Fase 2.1
 │   │   ├── CustomerRequestMapper.java
 │   │   ├── CustomerResponseMapper.java
 │   │   └── CustomerListMapper.java
 │   ├── productMapper/
+│   ├── reservationMapper/            ✅ Fase 3
+│   │   ├── ReservationRequestMapper.java
+│   │   └── ReservationResponseMapper.java
 │   ├── saleMapper/                   ✅ Fase 2.2
 │   │   ├── SaleItemRequestMapper.java
 │   │   ├── SaleItemResponseMapper.java
@@ -344,11 +569,16 @@ src/main/java/com/example/farmaser/
 │   └── userMapper/
 ├── model/
 │   ├── dto/
+│   │   ├── alertDto/                 ✅ Alertas
+│   │   │   └── AlertResponseDto.java
 │   │   ├── categoryDto/
 │   │   ├── customerDto/              ✅ Fase 2.1
 │   │   │   ├── CustomerRequestDto.java
 │   │   │   └── CustomerResponseDto.java
 │   │   ├── productDto/
+│   │   ├── reservationDto/           ✅ Fase 3
+│   │   │   ├── ReservationRequestDto.java
+│   │   │   └── ReservationResponseDto.java
 │   │   ├── saleDto/                  ✅ Fase 2.2
 │   │   │   ├── SaleRequestDto.java
 │   │   │   ├── SaleResponseDto.java
@@ -357,11 +587,15 @@ src/main/java/com/example/farmaser/
 │   │   ├── stockDto/
 │   │   └── userDto/
 │   ├── entity/
+│   │   ├── AlertEntity.java          ✅ Alertas
+│   │   ├── AlertType.java            ✅ Alertas
 │   │   ├── CategoryEntity.java
 │   │   ├── CustomerEntity.java       ✅ Fase 2.1
 │   │   ├── MovementType.java
 │   │   ├── PaymentMethod.java        ✅ Fase 2.2
 │   │   ├── ProductEntity.java
+│   │   ├── ReservationEntity.java    ✅ Fase 3
+│   │   ├── ReservationStatus.java    ✅ Fase 3
 │   │   ├── RoleEntity.java
 │   │   ├── SaleEntity.java           ✅ Fase 2.2
 │   │   ├── SaleItemEntity.java       ✅ Fase 2.2
@@ -370,9 +604,11 @@ src/main/java/com/example/farmaser/
 │   │   └── UserEntity.java
 │   ├── payload/
 │   └── repository/
+│       ├── AlertRepository.java      ✅ Alertas
 │       ├── CategoryRepository.java
 │       ├── CustomerRepository.java   ✅ Fase 2.1
 │       ├── ProductRepository.java
+│       ├── ReservationRepository.java ✅ Fase 3
 │       ├── RoleRepository.java
 │       ├── SaleItemRepository.java    ✅ Fase 2.2
 │       ├── SaleRepository.java        ✅ Fase 2.2
@@ -381,17 +617,21 @@ src/main/java/com/example/farmaser/
 ├── security/
 │   ├── filter/
 │   ├── jwt/
-│   └── SecurityConfig.java (actualizado para /api/v1/customers/** y /api/v1/sales/**)
+│   └── SecurityConfig.java (actualizado para /api/v1/customers/**, /api/v1/sales/**, /api/v1/reservations/** y /api/v1/alerts/**)
 └── service/
+    ├── IAlert.java                    ✅ Alertas
     ├── ICustomer.java                 ✅ Fase 2.1
     ├── IProduct.java
+    ├── IReservation.java              ✅ Fase 3
     ├── ISale.java                     ✅ Fase 2.2
     ├── IStockMovement.java
     ├── IUser.java
     └── impl/
+        ├── AlertService.java          ✅ Alertas
         ├── CategoryService.java
         ├── CustomerService.java       ✅ Fase 2.1
         ├── ProductService.java
+        ├── ReservationService.java   ✅ Fase 3
         ├── SaleService.java           ✅ Fase 2.2
         ├── StockMovementService.java
         ├── UserDetailsServiceImpl.java
@@ -404,11 +644,13 @@ src/main/java/com/example/farmaser/
 
 ### Inmediatos (Sprint Actual):
 
-1. **Testing de Fase 2 (Ventas y Clientes)**
+1. **Testing de Fases 2 y 3 (Ventas, Clientes y Reservas)**
    - Probar todos los endpoints de clientes
    - Probar flujo completo de ventas
+   - Probar flujo completo de reservas
    - Validar integración con stock
-   - Tiempo estimado: 2-3 días
+   - Validar expiración automática de reservas
+   - Tiempo estimado: 3-5 días
 
 ### Corto Plazo (Próximo Sprint):
 
@@ -458,18 +700,35 @@ src/main/java/com/example/farmaser/
 
 ## ⚠️ Notas Importantes
 
-1. ✅ **Fase 2 completada:** Sistema de Clientes y Ventas totalmente funcional
-2. ✅ **Fase 1 completamente funcional:** Productos, Categorías y Control de Stock
-3. **Flujo de Ventas:**
+1. ✅ **Fase 3 completada:** Sistema de Reservas totalmente funcional con expiración automática
+2. ✅ **Fase 2 completada:** Sistema de Clientes y Ventas totalmente funcional
+3. ✅ **Fase 1 completamente funcional:** Productos, Categorías y Control de Stock
+4. **Flujo de Ventas:**
    - Las ventas se crean automáticamente con status COMPLETED
    - El stock se actualiza automáticamente al crear una venta
    - Al cancelar una venta, el stock se revierte automáticamente
    - El IVA está configurado en 21% (ajustable en SaleService)
-4. **Validaciones implementadas:**
+5. **Flujo de Reservas:**
+   - Las reservas descuentan stock automáticamente al crearse
+   - Expiración automática cada hora (reservas con más de 7 días)
+   - Conversión de reservas en ventas
+   - Cancelación y expiración liberan stock automáticamente
+6. **Validaciones implementadas:**
    - DNI y Email únicos en clientes
-   - Validación de stock antes de vender
+   - Validación de stock antes de vender o reservar
    - Validación de cantidades positivas
-5. **Consideraciones futuras:**
+   - Validación de fechas de expiración
+7. **Sistema de Alertas de Vencimiento:**
+   - Detección automática de productos próximos a vencer (1 mes, 1 semana, hoy)
+   - Generación automática de alertas diaria a las 8:00 AM
+   - Alertas distribuidas a todos los usuarios del sistema
+   - Prevención de duplicados
+   - Sistema de lectura de alertas
+8. **Tareas programadas:**
+   - Expiración automática de reservas cada hora (ReservationScheduler)
+   - Generación de alertas de vencimiento cada día a las 8:00 AM (ProductExpirationScheduler)
+   - Habilitado con @EnableScheduling en FarmaserApplication
+9. **Consideraciones futuras:**
    - Implementar pruebas unitarias e integración
    - Evaluar agregar Swagger/OpenAPI para documentación de API
    - Considerar migraciones de BD con Flyway/Liquibase para producción
@@ -512,7 +771,74 @@ src/main/java/com/example/farmaser/
    - `PATCH /api/v1/sales/{id}/cancel`
    - El stock se revierte automáticamente
 
+### Escenario: Reservar un Producto
+
+1. **Crear/Verificar Cliente:**
+
+   - `POST /api/v1/customers` o `GET /api/v1/customers/{dni}`
+
+2. **Verificar Producto Disponible:**
+
+   - `GET /api/v1/products/{barcode}` o `GET /api/v1/products/search?name={name}`
+
+3. **Crear Reserva:**
+
+   - `POST /api/v1/reservations` con:
+     - `customerId`: ID del cliente
+     - `productId`: ID del producto
+     - `quantity`: Cantidad a reservar
+     - `notes`: Notas opcionales
+   - **El stock se descuenta automáticamente al crear la reserva**
+   - La reserva expira en 7 días automáticamente
+
+4. **Confirmar Reserva (opcional):**
+
+   - `PATCH /api/v1/reservations/{id}/confirm`
+   - Cambia status de PENDING a CONFIRMED
+
+5. **Completar Reserva (convertir en venta):**
+
+   - `PATCH /api/v1/reservations/{id}/complete` con:
+     - `paymentMethod`: CASH, CARD o TRANSFER
+     - `items`: Array de items de la venta (puede incluir más productos además del reservado)
+   - Se crea la venta automáticamente
+   - El stock ya estaba descontado, se maneja correctamente
+   - Status de reserva cambia a COMPLETED
+
+6. **Si se cancela la reserva:**
+
+   - `PATCH /api/v1/reservations/{id}/cancel`
+   - El stock se libera automáticamente y vuelve al producto
+
+7. **Expiración automática:**
+   - Las reservas expiran automáticamente después de 7 días
+   - Job programado ejecuta cada hora
+   - Stock se libera automáticamente de reservas expiradas
+
+### Escenario: Consultar Alertas de Productos Próximos a Vencer
+
+1. **Ver alertas no leídas:**
+
+   - `GET /api/v1/alerts/unread/all` - Ver todas las alertas no leídas
+   - `GET /api/v1/alerts/unread` - Ver alertas no leídas con paginación
+
+2. **Tipos de alertas de vencimiento:**
+
+   - **1 mes antes:** Productos que vencen en 28-31 días
+   - **1 semana antes:** Productos que vencen en 5-7 días
+   - **Hoy:** Productos que vencen el mismo día
+
+3. **Marcar alertas como leídas:**
+
+   - `PATCH /api/v1/alerts/{id}/read` - Marcar una alerta específica
+   - `PATCH /api/v1/alerts/read-all` - Marcar todas las alertas como leídas
+
+4. **Generación automática:**
+   - El sistema genera alertas automáticamente cada día a las 8:00 AM
+   - Analiza todos los productos activos con fecha de vencimiento
+   - Crea alertas para todos los usuarios del sistema
+
 ---
 
 **Última actualización:** Diciembre 2024
-**Estado general:** ✅ Fase 1 completa | ✅ Fase 2 completa | ⏳ Listo para Fase 3 (Reservas)
+**Estado general:** ✅ Fase 1 completa | ✅ Fase 2 completa | ✅ Fase 3 completa | ✅ Sistema de Alertas completo | ⏳ Listo para Fase 4 (Compras y Proveedores)

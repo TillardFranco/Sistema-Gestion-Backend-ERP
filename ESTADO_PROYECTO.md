@@ -13,8 +13,9 @@
 - ✅ Sistema de ventas completo
 - ✅ Sistema de reservas con expiración automática
 - ✅ Sistema de alertas de productos próximos a vencer
+- ✅ Sistema de roles granulares con permisos específicos
 
-El sistema permite registrar productos, categorizarlos, controlar su stock, gestionar clientes, procesar ventas con actualización automática de inventario, manejar reservas de productos con expiración automática y conversión en ventas, y recibir alertas automáticas cuando productos están próximos a vencer.
+El sistema permite registrar productos, categorizarlos, controlar su stock, gestionar clientes, procesar ventas con actualización automática de inventario, manejar reservas de productos con expiración automática y conversión en ventas, recibir alertas automáticas cuando productos están próximos a vencer, y gestionar usuarios con roles granulares que permiten control fino de permisos por funcionalidad.
 
 ---
 
@@ -489,6 +490,127 @@ El sistema permite registrar productos, categorizarlos, controlar su stock, gest
 
 ---
 
+## ✅ Fase 5.1 - Sistema de Roles Granulares - COMPLETADA
+
+### Funcionalidad: Roles y Permisos Genéricos ✅
+
+**Estado:** Completo e implementado
+
+**Funcionalidades implementadas:**
+
+- ✅ Sistema de 5 roles genéricos (SUPER_ADMIN, MANAGER, CASHIER, WAREHOUSE, VIEWER)
+- ✅ Permisos granulares por funcionalidad y operación
+- ✅ Control de acceso con `@PreAuthorize` en todos los controladores
+- ✅ Configuración de seguridad por roles en `SecurityConfig`
+- ✅ Migración automática de usuarios existentes (ADMIN→SUPER_ADMIN, USER→CASHIER)
+- ✅ Roles legacy (USER, ADMIN) mantenidos para compatibilidad
+
+**Roles implementados:**
+
+1. **SUPER_ADMIN** - Configuración del sistema
+
+   - Gestión de usuarios y roles
+   - Acceso completo a todo
+   - Solo 1-2 usuarios deberían tenerlo
+
+2. **MANAGER** - Administración diaria del negocio
+
+   - Ver reportes y analytics
+   - Crear/editar/eliminar productos
+   - Gestionar categorías
+   - Ver todas las ventas y cancelar ventas
+   - Gestionar clientes y reservas
+   - Ver alertas
+   - No puede gestionar usuarios
+
+3. **CASHIER** - Operaciones de venta al público
+
+   - Ver productos (solo lectura)
+   - Crear ventas
+   - Ver sus propias ventas
+   - Crear/editar clientes
+   - Crear reservas
+   - Ver alertas propias
+   - Cancelar sus propias ventas
+   - No puede editar productos ni gestionar stock
+
+4. **WAREHOUSE** - Gestión de inventario y stock
+
+   - Ver productos
+   - Crear/editar productos
+   - Gestionar stock (entradas, salidas, ajustes)
+   - Ver movimientos de stock
+   - Ver alertas de stock bajo
+   - Gestionar categorías
+   - No puede crear ventas ni gestionar clientes
+
+5. **VIEWER** - Solo lectura (consultas)
+   - Ver productos, ventas, clientes, reservas (solo lectura)
+   - Ver reportes básicos (solo lectura)
+   - Ver alertas
+   - No puede crear, editar ni eliminar nada
+
+**Matriz de Permisos Implementada:**
+
+| Funcionalidad                 | SUPER_ADMIN | MANAGER  | CASHIER         | WAREHOUSE      | VIEWER         |
+| ----------------------------- | ----------- | -------- | --------------- | -------------- | -------------- |
+| Usuarios y Roles              | ✅ Total    | ❌ No    | ❌ No           | ❌ No          | ❌ No          |
+| Productos - Ver               | ✅ Sí       | ✅ Sí    | ✅ Sí           | ✅ Sí          | ✅ Sí          |
+| Productos - Crear/Editar      | ✅ Sí       | ✅ Sí    | ❌ No           | ✅ Sí          | ❌ No          |
+| Productos - Eliminar          | ✅ Sí       | ✅ Sí    | ❌ No           | ❌ No          | ❌ No          |
+| Categorías - Ver              | ✅ Sí       | ✅ Sí    | ✅ Sí           | ✅ Sí          | ✅ Sí          |
+| Categorías - Gestionar        | ✅ Sí       | ✅ Sí    | ❌ No           | ✅ Sí          | ❌ No          |
+| Stock - Ver                   | ✅ Sí       | ✅ Sí    | ✅ Sí           | ✅ Sí          | ✅ Sí          |
+| Stock - Gestionar             | ✅ Sí       | ✅ Sí    | ❌ No           | ✅ Sí          | ❌ No          |
+| Ventas - Crear                | ✅ Sí       | ✅ Sí    | ✅ Sí           | ❌ No          | ❌ No          |
+| Ventas - Ver todas            | ✅ Sí       | ✅ Sí    | ❌ Solo propias | ✅ Sí          | ✅ Sí          |
+| Ventas - Cancelar             | ✅ Sí       | ✅ Sí    | ✅ Solo propias | ❌ No          | ❌ No          |
+| Clientes - Ver                | ✅ Sí       | ✅ Sí    | ✅ Sí           | ❌ No          | ✅ Sí          |
+| Clientes - Crear/Editar       | ✅ Sí       | ✅ Sí    | ✅ Sí           | ❌ No          | ❌ No          |
+| Reservas - Crear              | ✅ Sí       | ✅ Sí    | ✅ Sí           | ❌ No          | ❌ No          |
+| Reservas - Ver                | ✅ Sí       | ✅ Sí    | ✅ Sí           | ❌ No          | ✅ Sí          |
+| Reservas - Confirmar          | ✅ Sí       | ✅ Sí    | ❌ No           | ❌ No          | ❌ No          |
+| Reservas - Completar/Cancelar | ✅ Sí       | ✅ Sí    | ✅ Sí           | ❌ No          | ❌ No          |
+| Alertas                       | ✅ Total    | ✅ Total | ✅ Ver propias  | ✅ Ver propias | ✅ Ver propias |
+| Reportes                      | ✅ Total    | ✅ Total | ❌ No           | ✅ Stock       | ✅ Básicos     |
+
+**Configuración de Seguridad:**
+
+- `SecurityConfig` actualizado con `@EnableMethodSecurity` (reemplazando el deprecado `@EnableGlobalMethodSecurity`)
+- Endpoints `/api/v1/users/**` y `/api/v1/admin/**` restringidos a SUPER_ADMIN
+- Endpoints de ventas y clientes accesibles para SUPER_ADMIN, MANAGER, CASHIER
+- Endpoints de productos y stock accesibles para SUPER_ADMIN, MANAGER, WAREHOUSE
+- Permisos específicos por método con `@PreAuthorize` en todos los controladores
+
+**Controladores Actualizados:**
+
+- ✅ `ProductController` - Permisos por operación (ver/crear/editar/eliminar)
+- ✅ `SaleController` - Permisos diferenciados para crear/ver/cancelar
+- ✅ `CustomerController` - Permisos para ver/crear/editar/eliminar
+- ✅ `StockMovementController` - Permisos para gestionar stock
+- ✅ `ReservationController` - Permisos para crear/ver/confirmar/completar/cancelar
+- ✅ `CategoryController` - Permisos para ver/gestionar
+- ✅ `AdminController` - Solo SUPER_ADMIN
+- ✅ `UserController` - Solo SUPER_ADMIN
+- ✅ `AlertController` - Todos los usuarios autenticados
+
+**Migración de Datos:**
+
+- `DataInitializer` crea automáticamente todos los roles nuevos
+- Migra usuarios ADMIN existentes a SUPER_ADMIN
+- Migra usuarios USER existentes a CASHIER
+- Usuario admin por defecto (`admin@farmaser.com`) ahora tiene rol SUPER_ADMIN
+
+**Ventajas del Sistema:**
+
+- ✅ Genérico: Funciona para farmacias, tiendas, supermercados, etc.
+- ✅ Escalable: Fácil agregar más roles en el futuro
+- ✅ Seguro: Control fino de permisos por funcionalidad
+- ✅ Flexible: Cada negocio asigna roles según su necesidad
+- ✅ Profesional: Estándar en software comercial
+
+---
+
 ### FASE 4: Sistema de Compras y Proveedores (Prioridad MEDIA)
 
 - Gestión de proveedores
@@ -497,8 +619,8 @@ El sistema permite registrar productos, categorizarlos, controlar su stock, gest
 
 ### FASE 5: Mejoras de Seguridad y Roles (Prioridad ALTA)
 
-- Roles más granulares (Farmacéutico, Vendedor, Gerente, Depósito)
-- Sistema de auditoría
+- ✅ Roles más granulares (SUPER_ADMIN, MANAGER, CASHIER, WAREHOUSE, VIEWER) - **COMPLETADO**
+- ❌ Sistema de auditoría - **PENDIENTE**
 
 ### FASE 6: Reportes y Analytics (Prioridad MEDIA)
 
@@ -841,4 +963,4 @@ src/main/java/com/example/farmaser/
 ---
 
 **Última actualización:** Diciembre 2024
-**Estado general:** ✅ Fase 1 completa | ✅ Fase 2 completa | ✅ Fase 3 completa | ✅ Sistema de Alertas completo | ⏳ Listo para Fase 4 (Compras y Proveedores)
+**Estado general:** ✅ Fase 1 completa | ✅ Fase 2 completa | ✅ Fase 3 completa | ✅ Sistema de Alertas completo | ✅ Fase 5.1 (Roles Granulares) completa | ⏳ Listo para Fase 4 (Compras y Proveedores) o Fase 5.2 (Auditoría)

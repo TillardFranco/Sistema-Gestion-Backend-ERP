@@ -32,25 +32,67 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         createRoles();
+        migrateExistingUsers();
         createAdminUser();
     }
 
     private void createRoles() {
-        if (roleRepository.count() == 0) {
-            Arrays.stream(ERole.values()).forEach(role -> {
+        // Crear todos los roles nuevos si no existen
+        Arrays.stream(ERole.values()).forEach(role -> {
+            if (!roleRepository.existsByName(role)) {
                 RoleEntity roleEntity = new RoleEntity();
                 roleEntity.setName(role);
                 roleRepository.save(roleEntity);
+            }
+        });
+    }
+
+    private void migrateExistingUsers() {
+        // Migrar usuarios ADMIN existentes a SUPER_ADMIN
+        RoleEntity superAdminRole = roleRepository.findByName(ERole.SUPER_ADMIN)
+                .orElseGet(() -> {
+                    RoleEntity role = new RoleEntity();
+                    role.setName(ERole.SUPER_ADMIN);
+                    return roleRepository.save(role);
+                });
+
+        RoleEntity adminRole = roleRepository.findByName(ERole.ADMIN).orElse(null);
+        if (adminRole != null) {
+            userRepository.findAll().forEach(user -> {
+                if (user.getRoles().contains(adminRole)) {
+                    user.getRoles().remove(adminRole);
+                    user.getRoles().add(superAdminRole);
+                    userRepository.save(user);
+                }
+            });
+        }
+
+        // Migrar usuarios USER existentes a CASHIER
+        RoleEntity cashierRole = roleRepository.findByName(ERole.CASHIER)
+                .orElseGet(() -> {
+                    RoleEntity role = new RoleEntity();
+                    role.setName(ERole.CASHIER);
+                    return roleRepository.save(role);
+                });
+
+        RoleEntity userRole = roleRepository.findByName(ERole.USER).orElse(null);
+        if (userRole != null) {
+            userRepository.findAll().forEach(user -> {
+                if (user.getRoles().contains(userRole) && !user.getRoles().contains(superAdminRole)) {
+                    user.getRoles().remove(userRole);
+                    user.getRoles().add(cashierRole);
+                    userRepository.save(user);
+                }
             });
         }
     }
 
     private void createAdminUser() {
         if (!userRepository.existsByEmail(adminEmail)) {
-            RoleEntity adminRole = roleRepository.findByName(ERole.ADMIN)
+            RoleEntity superAdminRole = roleRepository.findByName(ERole.SUPER_ADMIN)
                     .orElseGet(() -> {
                         RoleEntity role = new RoleEntity();
-                        role.setName(ERole.ADMIN);
+                        role.setName(ERole.SUPER_ADMIN);
                         return roleRepository.save(role);
                     });
 
@@ -60,7 +102,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setName("Admin");
             admin.setLastname("System");
 
-            admin.setRoles(Set.of(adminRole)); // Solo rol ADMIN
+            admin.setRoles(Set.of(superAdminRole)); // Rol SUPER_ADMIN
 
             userRepository.save(admin);
         }

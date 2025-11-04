@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,24 +20,28 @@ public class CategoryController {
     private ICategory categoryService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<List<CategoryResponseDto>> listAll() {
         List<CategoryResponseDto> categories = categoryService.listAll();
         return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<CategoryResponseDto> findById(@PathVariable Long id) {
         CategoryResponseDto category = categoryService.findById(id);
         return ResponseEntity.ok(category);
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<CategoryResponseDto> create(@Valid @RequestBody CategoryRequestDto categoryRequestDto) {
         CategoryResponseDto createdCategory = categoryService.save(categoryRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<CategoryResponseDto> update(
             @PathVariable Long id,
             @Valid @RequestBody CategoryRequestDto categoryRequestDto) {
@@ -45,6 +50,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();

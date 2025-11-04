@@ -2,10 +2,10 @@
 
 ## 📊 Estado Actual del Proyecto
 
-### ✅ **Ya Implementado (FASE 1 COMPLETA):**
+### ✅ **Ya Implementado (FASE 1 COMPLETA + FASE 5.1):**
 
 - ✅ Autenticación JWT (login/register)
-- ✅ Sistema de usuarios con roles (ADMIN, USER)
+- ✅ Sistema de usuarios con roles granulares (SUPER_ADMIN, MANAGER, CASHIER, WAREHOUSE, VIEWER)
 - ✅ CRUD completo de usuarios
 - ✅ **CRUD completo de productos** (ProductService + ProductController)
 - ✅ **Sistema de categorías completo** (CategoryEntity, Service, Controller)
@@ -27,8 +27,8 @@
 - ❌ Sistema de compras (FASE 4)
 - ❌ Notificaciones/alertas (FASE 7)
 - ❌ Reportes y estadísticas (FASE 6)
-- ❌ Ampliación de roles (FASE 5)
-- ❌ Auditoría (FASE 5)
+- ✅ Ampliación de roles (FASE 5.1) - **COMPLETADO**
+- ❌ Auditoría (FASE 5.2) - **PENDIENTE**
 
 ---
 
@@ -359,24 +359,39 @@ _Prioridad: MEDIA | Tiempo estimado: 2-3 semanas_
 
 _Prioridad: ALTA | Tiempo estimado: 1-2 semanas_
 
-### **5.1 Ampliar Sistema de Roles**
+### **5.1 Ampliar Sistema de Roles** ✅ COMPLETADO
 
-**Objetivo:** Roles más granulares (Farmacéutico, Vendedor, Gerente, etc.)
+**Objetivo:** Roles más granulares genéricos (funcionan para cualquier tipo de comercio)
 
 **Tareas:**
 
-- [ ] Extender `ERole`:
-  - [ ] `PHARMACIST` (Farmacéutico)
-  - [ ] `SELLER` (Vendedor)
-  - [ ] `MANAGER` (Gerente)
-  - [ ] `WAREHOUSE` (Depósito)
-- [ ] Actualizar `SecurityConfig` con permisos por rol:
-  - [ ] Farmacéutico: puede ver todo, gestionar productos, ventas
-  - [ ] Vendedor: puede ver productos, crear ventas, clientes
-  - [ ] Gerente: acceso completo + reportes
-  - [ ] Depósito: gestionar stock, compras
-- [ ] Agregar anotaciones `@PreAuthorize` en controladores
-- [ ] Actualizar `DataInitializer` con roles iniciales
+- [x] Extender `ERole`:
+  - [x] `SUPER_ADMIN` (Configuración del sistema)
+  - [x] `MANAGER` (Administración diaria)
+  - [x] `CASHIER` (Operaciones de venta)
+  - [x] `WAREHOUSE` (Gestión de inventario)
+  - [x] `VIEWER` (Solo lectura)
+  - [x] Mantener roles legacy (USER, ADMIN) para compatibilidad
+- [x] Actualizar `SecurityConfig` con permisos por rol:
+  - [x] SUPER_ADMIN: gestión de usuarios y acceso completo
+  - [x] MANAGER: administración diaria, reportes, productos, ventas
+  - [x] CASHIER: ventas, clientes, reservas (sin editar productos)
+  - [x] WAREHOUSE: productos, stock, categorías (sin ventas)
+  - [x] VIEWER: solo lectura en todo
+- [x] Agregar anotaciones `@PreAuthorize` en todos los controladores
+- [x] Actualizar `DataInitializer` con roles iniciales y migración automática
+- [x] Actualizar `@EnableMethodSecurity` (reemplazando deprecado `@EnableGlobalMethodSecurity`)
+
+**Archivos modificados:**
+
+- `ERole.java` - Enum actualizado con 5 roles nuevos
+- `SecurityConfig.java` - Permisos por rol y rutas protegidas
+- `DataInitializer.java` - Creación de roles y migración de usuarios
+- Todos los controladores - `@PreAuthorize` en cada endpoint según matriz de permisos
+
+**Documentación:**
+
+- `ROLES_Y_PERMISOS.md` - Documentación completa del sistema de roles
 
 ---
 

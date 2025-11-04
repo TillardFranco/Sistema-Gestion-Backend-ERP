@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class ProductController {
     private IProduct productService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<Page<ProductResponseDto>> listAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -35,18 +37,21 @@ public class ProductController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<List<ProductResponseDto>> listAllWithoutPagination() {
         List<ProductResponseDto> products = productService.listAll();
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{barcode}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<ProductResponseDto> findByBarcode(@PathVariable String barcode) {
         ProductResponseDto product = productService.findByBarcode(barcode);
         return ResponseEntity.ok(product);
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<Page<ProductResponseDto>> searchByName(
             @RequestParam String name,
             @RequestParam(defaultValue = "0") int page,
@@ -60,18 +65,21 @@ public class ProductController {
     }
 
     @GetMapping("/search/all")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<List<ProductResponseDto>> searchByNameWithoutPagination(@RequestParam String name) {
         List<ProductResponseDto> products = productService.searchByName(name);
         return ResponseEntity.ok(products);
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<ProductResponseDto> create(@Valid @RequestBody ProductRequestDto productRequestDto) {
         ProductResponseDto createdProduct = productService.save(productRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
     @PutMapping("/{barcode}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<ProductResponseDto> update(
             @PathVariable String barcode,
             @Valid @RequestBody ProductRequestDto productRequestDto) {
@@ -80,6 +88,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{barcode}/stock")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<ProductResponseDto> updateStock(
             @PathVariable String barcode,
             @RequestParam Integer stock) {
@@ -88,12 +97,14 @@ public class ProductController {
     }
 
     @DeleteMapping("/{barcode}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable String barcode) {
         productService.delete(barcode);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/low-stock")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<List<ProductResponseDto>> getLowStockProducts() {
         List<ProductResponseDto> products = productService.getLowStockProducts();
         return ResponseEntity.ok(products);

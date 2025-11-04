@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ public class SaleController {
     private ISale saleService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER')")
     public ResponseEntity<SaleResponseDto> create(@Valid @RequestBody SaleRequestDto requestDto) {
         String userEmail = getCurrentUserEmail();
         SaleResponseDto created = saleService.create(requestDto, userEmail);
@@ -33,6 +35,7 @@ public class SaleController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'VIEWER')")
     public ResponseEntity<Page<SaleResponseDto>> listAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -43,6 +46,7 @@ public class SaleController {
     }
 
     @GetMapping("/status/{status}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'VIEWER')")
     public ResponseEntity<Page<SaleResponseDto>> listByStatus(
             @PathVariable SaleStatus status,
             @RequestParam(defaultValue = "0") int page,
@@ -52,11 +56,13 @@ public class SaleController {
     }
 
     @GetMapping("/search/by-sale-number/{saleNumber}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'VIEWER')")
     public ResponseEntity<SaleResponseDto> findBySaleNumber(@PathVariable String saleNumber) {
         return ResponseEntity.ok(saleService.findBySaleNumber(saleNumber));
     }
 
     @GetMapping("/reports/by-date-range")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'VIEWER')")
     public ResponseEntity<Page<SaleResponseDto>> listByDateRange(
             @RequestParam Date start,
             @RequestParam Date end,
@@ -67,6 +73,7 @@ public class SaleController {
     }
 
     @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER')")
     public ResponseEntity<SaleResponseDto> cancel(@PathVariable Long id) {
         return ResponseEntity.ok(saleService.cancel(id));
     }

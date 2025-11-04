@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -25,12 +26,14 @@ public class ReservationController {
     private IReservation reservationService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER')")
     public ResponseEntity<ReservationResponseDto> create(@Valid @RequestBody ReservationRequestDto requestDto) {
         ReservationResponseDto created = reservationService.create(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER', 'VIEWER')")
     public ResponseEntity<Page<ReservationResponseDto>> listAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -41,6 +44,7 @@ public class ReservationController {
     }
 
     @GetMapping("/status/{status}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER', 'VIEWER')")
     public ResponseEntity<Page<ReservationResponseDto>> listByStatus(
             @PathVariable ReservationStatus status,
             @RequestParam(defaultValue = "0") int page,
@@ -50,21 +54,25 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER', 'VIEWER')")
     public ResponseEntity<ReservationResponseDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.findById(id));
     }
 
     @GetMapping("/search/by-reservation-number/{reservationNumber}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER', 'VIEWER')")
     public ResponseEntity<ReservationResponseDto> findByReservationNumber(@PathVariable String reservationNumber) {
         return ResponseEntity.ok(reservationService.findByReservationNumber(reservationNumber));
     }
 
     @PatchMapping("/{id}/confirm")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<ReservationResponseDto> confirm(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.confirm(id));
     }
 
     @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER')")
     public ResponseEntity<ReservationResponseDto> complete(
             @PathVariable Long id,
             @Valid @RequestBody SaleRequestDto saleRequestDto) {
@@ -73,11 +81,13 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'CASHIER')")
     public ResponseEntity<ReservationResponseDto> cancel(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.cancel(id));
     }
 
     @DeleteMapping("/expired")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER')")
     public ResponseEntity<Void> expireReservations() {
         reservationService.expireReservations();
         return ResponseEntity.noContent().build();

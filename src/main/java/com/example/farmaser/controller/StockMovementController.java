@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,7 @@ public class StockMovementController {
     private IProduct productService;
 
     @PostMapping("/entry")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<StockMovementResponseDto> registerEntry(
             @Valid @RequestBody StockMovementRequestDto stockMovementRequestDto) {
         String userEmail = getCurrentUserEmail();
@@ -33,6 +35,7 @@ public class StockMovementController {
     }
 
     @PostMapping("/exit")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<StockMovementResponseDto> registerExit(
             @Valid @RequestBody StockMovementRequestDto stockMovementRequestDto) {
         String userEmail = getCurrentUserEmail();
@@ -41,18 +44,21 @@ public class StockMovementController {
     }
 
     @GetMapping("/movements/{productId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<List<StockMovementResponseDto>> getMovementsByProduct(@PathVariable Long productId) {
         List<StockMovementResponseDto> movements = stockMovementService.getMovementsByProduct(productId);
         return ResponseEntity.ok(movements);
     }
 
     @GetMapping("/movements")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE', 'CASHIER', 'VIEWER')")
     public ResponseEntity<List<StockMovementResponseDto>> getAllMovements() {
         List<StockMovementResponseDto> movements = stockMovementService.getAllMovements();
         return ResponseEntity.ok(movements);
     }
 
     @GetMapping("/low-stock")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MANAGER', 'WAREHOUSE')")
     public ResponseEntity<List<com.example.farmaser.model.dto.productDto.ProductResponseDto>> getLowStockProducts() {
         List<com.example.farmaser.model.dto.productDto.ProductResponseDto> products = productService.getLowStockProducts();
         return ResponseEntity.ok(products);

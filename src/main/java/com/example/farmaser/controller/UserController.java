@@ -8,6 +8,7 @@ import com.example.farmaser.model.dto.userDto.UserRequestDto;
 import com.example.farmaser.model.dto.userDto.UserResponseDto;
 import com.example.farmaser.service.impl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,26 +30,31 @@ public class UserController {
     private UserListMapper userListMapper;
 
     @GetMapping("usuarios")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public List<UserResponseDto> showAll() {
         return userService.listAll();
     }
 
     @PostMapping("usuario")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public UserResponseDto create(@RequestBody UserRequestDto userRequestDto) {
         return userService.save(userRequestDto);
     }
 
     @PutMapping("usuario/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public UserResponseDto update(@PathVariable String email, @RequestBody UserRequestDto userRequestDto) {
         return userService.update(email, userRequestDto);
     }
 
     @DeleteMapping("usuario/{email}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public void delete(@PathVariable String email) {
         userService.delete(email);
     }
 
     @GetMapping("usuario/{email}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public UserResponseDto findByEmail(@PathVariable String email) {
         return userService.findByEmail(email);
     }

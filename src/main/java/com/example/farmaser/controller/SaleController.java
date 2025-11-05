@@ -1,5 +1,6 @@
 package com.example.farmaser.controller;
 
+import com.example.farmaser.config.PaginationConstants;
 import com.example.farmaser.model.dto.saleDto.SaleRequestDto;
 import com.example.farmaser.model.dto.saleDto.SaleResponseDto;
 import com.example.farmaser.model.entity.SaleStatus;
@@ -41,7 +42,8 @@ public class SaleController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "DESC") Sort.Direction sortDir) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        int validatedSize = PaginationConstants.validateAndLimitPageSize(size, PaginationConstants.MAX_PAGE_SIZE_SALES);
+        Pageable pageable = PageRequest.of(page, validatedSize, Sort.by(sortDir, sortBy));
         return ResponseEntity.ok(saleService.listAll(pageable));
     }
 
@@ -51,7 +53,8 @@ public class SaleController {
             @PathVariable SaleStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"));
+        int validatedSize = PaginationConstants.validateAndLimitPageSize(size, PaginationConstants.MAX_PAGE_SIZE_SALES);
+        Pageable pageable = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, "date"));
         return ResponseEntity.ok(saleService.listByStatus(status, pageable));
     }
 
@@ -68,7 +71,8 @@ public class SaleController {
             @RequestParam Date end,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"));
+        int validatedSize = PaginationConstants.validateAndLimitPageSize(size, PaginationConstants.MAX_PAGE_SIZE_SALES);
+        Pageable pageable = PageRequest.of(page, validatedSize, Sort.by(Sort.Direction.DESC, "date"));
         return ResponseEntity.ok(saleService.listByDateRange(start, end, pageable));
     }
 

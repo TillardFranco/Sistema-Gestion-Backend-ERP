@@ -1,5 +1,6 @@
 package com.example.farmaser.controller;
 
+import com.example.farmaser.config.PaginationConstants;
 import com.example.farmaser.model.dto.customerDto.CustomerRequestDto;
 import com.example.farmaser.model.dto.customerDto.CustomerResponseDto;
 import com.example.farmaser.service.ICustomer;
@@ -31,7 +32,8 @@ public class CustomerController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDir) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        int validatedSize = PaginationConstants.validateAndLimitPageSize(size, PaginationConstants.MAX_PAGE_SIZE_CUSTOMERS);
+        Pageable pageable = PageRequest.of(page, validatedSize, Sort.by(sortDir, sortBy));
         Page<CustomerResponseDto> customers = customerService.listAll(pageable);
         return ResponseEntity.ok(customers);
     }
@@ -59,7 +61,8 @@ public class CustomerController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDir) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        int validatedSize = PaginationConstants.validateAndLimitPageSize(size, PaginationConstants.MAX_PAGE_SIZE_CUSTOMERS);
+        Pageable pageable = PageRequest.of(page, validatedSize, Sort.by(sortDir, sortBy));
         Page<CustomerResponseDto> customers = customerService.searchByName(name, pageable);
         return ResponseEntity.ok(customers);
     }
@@ -80,7 +83,8 @@ public class CustomerController {
             @RequestParam(defaultValue = "email") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDir) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        int validatedSize = PaginationConstants.validateAndLimitPageSize(size, PaginationConstants.MAX_PAGE_SIZE_CUSTOMERS);
+        Pageable pageable = PageRequest.of(page, validatedSize, Sort.by(sortDir, sortBy));
         Page<CustomerResponseDto> customers = customerService.searchByEmail(email, pageable);
         return ResponseEntity.ok(customers);
     }

@@ -9,6 +9,8 @@ import com.example.farmaser.model.entity.CategoryEntity;
 import com.example.farmaser.model.repository.CategoryRepository;
 import com.example.farmaser.service.ICategory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ public class CategoryService implements ICategory {
     private CategoryMapper categoryMapper;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "'all'")
     @Override
     public List<CategoryResponseDto> listAll() {
         List<CategoryEntity> categories = categoryRepository.findByActiveTrue();
@@ -31,6 +34,7 @@ public class CategoryService implements ICategory {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "categories", key = "#id")
     @Override
     public CategoryResponseDto findById(Long id) {
         CategoryEntity categoryEntity = categoryRepository.findById(id)
@@ -40,6 +44,7 @@ public class CategoryService implements ICategory {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     @Override
     public CategoryResponseDto save(CategoryRequestDto categoryRequestDto) {
         // Validar que el nombre no exista
@@ -59,6 +64,7 @@ public class CategoryService implements ICategory {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     @Override
     public CategoryResponseDto update(Long id, CategoryRequestDto categoryRequestDto) {
         CategoryEntity existingCategory = categoryRepository.findById(id)
@@ -86,6 +92,7 @@ public class CategoryService implements ICategory {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     @Override
     public void delete(Long id) {
         CategoryEntity categoryEntity = categoryRepository.findById(id)

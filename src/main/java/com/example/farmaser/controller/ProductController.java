@@ -1,5 +1,6 @@
 package com.example.farmaser.controller;
 
+import com.example.farmaser.config.PaginationConstants;
 import com.example.farmaser.model.dto.productDto.ProductRequestDto;
 import com.example.farmaser.model.dto.productDto.ProductResponseDto;
 import com.example.farmaser.service.IProduct;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/v1/products")
 public class ProductController {
@@ -31,7 +33,8 @@ public class ProductController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDir) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        int validatedSize = PaginationConstants.validateAndLimitPageSize(size, PaginationConstants.MAX_PAGE_SIZE_PRODUCTS);
+        Pageable pageable = PageRequest.of(page, validatedSize, Sort.by(sortDir, sortBy));
         Page<ProductResponseDto> products = productService.listAll(pageable);
         return ResponseEntity.ok(products);
     }
@@ -59,7 +62,8 @@ public class ProductController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction sortDir) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        int validatedSize = PaginationConstants.validateAndLimitPageSize(size, PaginationConstants.MAX_PAGE_SIZE_PRODUCTS);
+        Pageable pageable = PageRequest.of(page, validatedSize, Sort.by(sortDir, sortBy));
         Page<ProductResponseDto> products = productService.searchByName(name, pageable);
         return ResponseEntity.ok(products);
     }

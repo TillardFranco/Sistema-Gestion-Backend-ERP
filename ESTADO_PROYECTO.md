@@ -1,8 +1,8 @@
-# 📊 Estado Actual del Proyecto FarmaSer
+# 📊 Estado Actual del Proyecto Sistema-Gestion-Backend-(ERP)
 
 ## 🎯 Resumen Ejecutivo
 
-**FarmaSer** es un sistema de gestión de farmacia desarrollado en **Spring Boot 3.4.4** con **Java 17**, similar a plataformas como Farmacity.
+**ERP** es un sistema de gestión backend desarrollado en **Spring Boot 3.4.4** con **Java 17**, similar a plataformas como Farmacity.
 
 **Módulos implementados:**
 
@@ -782,15 +782,17 @@ _IMPORTANTE_
 - Primera entrega enfocada en APIs; dashboard UI y exportación a PDF se abordarán luego
 - Los cálculos consideran ventas en estado actual y usan los totales de cada venta
 
-### ✅ FASE 7: Optimizaciones y Performance (Entrega 1) – COMPLETADA
+### ✅ FASE 7: Optimizaciones y Performance – COMPLETADA
+
+#### Entrega 1: Optimizaciones de Base de Datos
 
 **Cambios aplicados:**
 
-- Reportes sin N+1: consultas optimizadas con `JOIN FETCH` (ventas + items)
-- Índices JPA:
+- ✅ Reportes sin N+1: consultas optimizadas con `JOIN FETCH` (ventas + items)
+- ✅ Índices JPA:
   - `sale`: `date`, `status`, `customer_id`, `user_id`
   - `sale_item`: `sale_id`, `product_id`
-- Validación de parámetros en reportes (límite con tope 100, fechas requeridas)
+- ✅ Validación de parámetros en reportes (límite con tope 100, fechas requeridas)
 
 **Impacto:**
 
@@ -798,11 +800,39 @@ _IMPORTANTE_
 - Mejor tiempo de respuesta en rangos de fechas amplios
 - Base de datos preparada para escalar consultas analíticas
 
-**Próximas optimizaciones (pendientes):**
+#### Entrega 2: Optimizaciones de Aplicación
 
-- Límites y defaults globales de paginación en listados masivos
-- Cache selectiva de catálogos (categorías) y configuración
-- Logging de consultas lentas y métricas (actuación por evidencia)
+**Cambios aplicados:**
+
+- ✅ **Paginación global con límites:**
+  - Clase `PaginationConstants` con límites máximos por tipo de recurso
+  - Productos: máximo 100 por página
+  - Clientes: máximo 100 por página
+  - Ventas: máximo 50 por página
+  - Validación automática en todos los controladores principales
+- ✅ **Cache de categorías:**
+  - Implementado con Spring Cache (`@Cacheable`, `@CacheEvict`)
+  - Cache en memoria para listado y búsqueda por ID
+  - Invalidación automática al crear/actualizar/eliminar categorías
+  - Configuración centralizada en `CacheConfig`
+- ✅ **Validaciones de fechas en reportes:**
+  - Validación de rango máximo (1 año)
+  - Validación de orden (start < end)
+  - Validación de fechas requeridas
+
+**Impacto:**
+
+- Protección contra consultas masivas que pueden sobrecargar el servidor
+- Mejor performance en endpoints de categorías (datos cacheados)
+- Prevención de errores por rangos de fechas inválidos o excesivos
+- Mejor experiencia de usuario con respuestas más rápidas
+
+**Componentes creados:**
+
+- `PaginationConstants.java` - Constantes y utilidades para paginación
+- `CacheConfig.java` - Configuración de cache de Spring
+- Actualización de `CategoryService` con anotaciones de cache
+- Actualización de controladores: `ProductController`, `CustomerController`, `SaleController`, `ReportController`
 
 ### FASE 8-9: Features Avanzadas (Prioridad MEDIA/BAJA)
 

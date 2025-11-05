@@ -35,7 +35,11 @@ build/
 
 # Archivos de entorno (no subir contraseñas)
 .env
-*.properties
+# Excluir application.properties pero permitir el ejemplo
+src/main/resources/application.properties
+src/test/resources/application.properties
+!src/main/resources/application.properties.example
+!src/test/resources/application.properties.example
 
 ### VS Code ###
 .vscode/

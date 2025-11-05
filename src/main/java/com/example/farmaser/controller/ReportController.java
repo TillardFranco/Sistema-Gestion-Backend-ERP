@@ -1,5 +1,6 @@
 package com.example.farmaser.controller;
 
+import com.example.farmaser.exceptions.BadRequestException;
 import com.example.farmaser.model.dto.reportDto.DailySalesPointDto;
 import com.example.farmaser.model.dto.reportDto.SalesSummaryDto;
 import com.example.farmaser.model.dto.reportDto.SellerPerformanceDto;
@@ -23,11 +24,27 @@ public class ReportController {
     @Autowired
     private IReport reportService;
 
+    private static final long MAX_DATE_RANGE_MS = 365L * 24 * 60 * 60 * 1000; // 1 año en milisegundos
+
+    private void validateDateRange(Date start, Date end) {
+        if (start == null || end == null) {
+            throw new BadRequestException("Las fechas de inicio y fin son requeridas");
+        }
+        if (start.after(end)) {
+            throw new BadRequestException("La fecha de inicio debe ser anterior a la fecha de fin");
+        }
+        long rangeMs = end.getTime() - start.getTime();
+        if (rangeMs > MAX_DATE_RANGE_MS) {
+            throw new BadRequestException("El rango de fechas no puede exceder 1 año");
+        }
+    }
+
     @GetMapping("/sales/summary")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','MANAGER')")
     public SalesSummaryDto getSalesSummary(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date end) {
+        validateDateRange(start, end);
         return reportService.getSalesSummary(start, end);
     }
 
@@ -37,6 +54,7 @@ public class ReportController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date end,
             @RequestParam(defaultValue = "10") int limit) {
+        validateDateRange(start, end);
         int effectiveLimit = Math.max(1, Math.min(limit, 100));
         return reportService.getTopProducts(start, end, effectiveLimit);
     }
@@ -46,6 +64,7 @@ public class ReportController {
     public List<SellerPerformanceDto> getSellerPerformance(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date end) {
+        validateDateRange(start, end);
         return reportService.getSellerPerformance(start, end);
     }
 
@@ -54,6 +73,7 @@ public class ReportController {
     public List<DailySalesPointDto> getDailySeries(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date end) {
+        validateDateRange(start, end);
         return reportService.getDailySalesSeries(start, end);
     }
 }

@@ -10,10 +10,10 @@
 	</parent>
 
 	<groupId>com.example</groupId>
-	<artifactId>farmaser</artifactId>
+	<artifactId>Sistema-Gestion-Backend-(ERP)</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>farmaser</name>
-	<description>BackEnd for FarmaSer Web</description>
+	<name>ERP Backend</name>
+	<description>ERP Backend genérico y modular</description>
 
 	<properties>
 		<java.version>17</java.version>

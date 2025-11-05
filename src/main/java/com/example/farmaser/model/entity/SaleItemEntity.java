@@ -12,7 +12,10 @@ import java.math.BigDecimal;
 @ToString
 @Builder
 @Entity
-@Table(name = "sale_item")
+@Table(name = "sale_item", indexes = {
+        @Index(name = "idx_sale_item_sale", columnList = "sale_id"),
+        @Index(name = "idx_sale_item_product", columnList = "product_id")
+})
 public class SaleItemEntity implements Serializable {
 
     @Id

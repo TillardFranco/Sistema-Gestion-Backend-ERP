@@ -749,17 +749,63 @@ auditHelper.log("Product", savedProduct.getId(), ActionType.UPDATE, oldValue,
 - ✅ Roles más granulares (SUPER_ADMIN, MANAGER, CASHIER, WAREHOUSE, VIEWER) - **COMPLETADO**
 - ✅ Sistema de auditoría - **COMPLETADO**
 
-### FASE 6: Reportes y Analytics (Prioridad MEDIA)
+### ✅ FASE 6: Reportes y Analytics (Primera entrega) – COMPLETADA
 
-- Reportes y analytics
-- Dashboard con métricas
-- Optimizaciones de performance
-- Generación de PDFs
-- Testing
+**Nuevos Endpoints (requieren SUPER_ADMIN o MANAGER):**
 
-### FASE 7-9: Optimizaciones y Features Avanzadas (Prioridad MEDIA/BAJA)
+- `GET /api/v1/reports/sales/summary?start={ISO_DATE}&end={ISO_DATE}`
+  - Resumen de ventas: total de ventas, items vendidos, subtotal, IVA, total
+- `GET /api/v1/reports/sales/top-products?start={ISO_DATE}&end={ISO_DATE}&limit=10`
+  - Top productos por cantidad y facturación
+- `GET /api/v1/reports/sales/by-seller?start={ISO_DATE}&end={ISO_DATE}`
+  - Rendimiento por vendedor: ventas, items, facturación
+- `GET /api/v1/reports/sales/daily?start={ISO_DATE}&end={ISO_DATE}`
+  - Serie diaria de ventas (para gráficos)
 
-- Optimizaciones de performance
+**DTOs nuevos:**
+
+- `SalesSummaryDto`
+- `TopProductDto`
+- `SellerPerformanceDto`
+- `DailySalesPointDto`
+
+**Componentes:**
+
+- `IReport` y `ReportService` con agregaciones en memoria (sobre ventas filtradas por fecha)
+- `ReportController` con seguridad por roles
+- `SecurityConfig` actualizado para permitir `/api/v1/reports/**`
+
+**Notas:**
+
+_IMPORTANTE_
+
+- Primera entrega enfocada en APIs; dashboard UI y exportación a PDF se abordarán luego
+- Los cálculos consideran ventas en estado actual y usan los totales de cada venta
+
+### ✅ FASE 7: Optimizaciones y Performance (Entrega 1) – COMPLETADA
+
+**Cambios aplicados:**
+
+- Reportes sin N+1: consultas optimizadas con `JOIN FETCH` (ventas + items)
+- Índices JPA:
+  - `sale`: `date`, `status`, `customer_id`, `user_id`
+  - `sale_item`: `sale_id`, `product_id`
+- Validación de parámetros en reportes (límite con tope 100, fechas requeridas)
+
+**Impacto:**
+
+- Menos queries y menor latencia en endpoints de reportes
+- Mejor tiempo de respuesta en rangos de fechas amplios
+- Base de datos preparada para escalar consultas analíticas
+
+**Próximas optimizaciones (pendientes):**
+
+- Límites y defaults globales de paginación en listados masivos
+- Cache selectiva de catálogos (categorías) y configuración
+- Logging de consultas lentas y métricas (actuación por evidencia)
+
+### FASE 8-9: Features Avanzadas (Prioridad MEDIA/BAJA)
+
 - Generación de PDFs
 - Testing
 - Features avanzadas (promociones, fidelidad, etc.)

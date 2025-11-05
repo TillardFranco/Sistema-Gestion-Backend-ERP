@@ -16,7 +16,12 @@ import java.util.List;
 @ToString
 @Builder
 @Entity
-@Table(name = "sale")
+@Table(name = "sale", indexes = {
+        @Index(name = "idx_sale_date", columnList = "date"),
+        @Index(name = "idx_sale_status", columnList = "status"),
+        @Index(name = "idx_sale_customer", columnList = "customer_id"),
+        @Index(name = "idx_sale_user", columnList = "user_id")
+})
 public class SaleEntity implements Serializable {
 
     @Id

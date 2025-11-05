@@ -47,9 +47,9 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/users/**", "/api/v1/admin/**")
                         .hasRole("SUPER_ADMIN");
                     
-                    // SUPER_ADMIN + MANAGER (reportes futuros)
-                    // auth.requestMatchers("/api/v1/reports/**")
-                    //     .hasAnyRole("SUPER_ADMIN", "MANAGER");
+                    // SUPER_ADMIN + MANAGER (reportes)
+                    auth.requestMatchers("/api/v1/reports/**")
+                        .hasAnyRole("SUPER_ADMIN", "MANAGER");
                     
                     // SUPER_ADMIN + MANAGER + CASHIER (ventas y clientes)
                     auth.requestMatchers("/api/v1/sales/**", "/api/v1/customers/**")

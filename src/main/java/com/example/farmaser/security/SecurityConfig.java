@@ -67,6 +67,10 @@ public class SecurityConfig {
                     // Alertas: todos autenticados
                     auth.requestMatchers("/api/v1/alerts/**").authenticated();
                     
+                    // Auditoría: Solo SUPER_ADMIN y MANAGER
+                    auth.requestMatchers("/api/v1/audit/**")
+                        .hasAnyRole("SUPER_ADMIN", "MANAGER");
+                    
                     // Por defecto, requiere autenticación (los permisos específicos se manejan con @PreAuthorize)
                     auth.anyRequest().authenticated();
                 })

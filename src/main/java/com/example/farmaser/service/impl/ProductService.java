@@ -1,5 +1,6 @@
 package com.example.farmaser.service.impl;
 
+import com.example.farmaser.config.AuditHelper;
 import com.example.farmaser.exceptions.BadRequestException;
 import com.example.farmaser.exceptions.NotFoundException;
 import com.example.farmaser.mapper.productMapper.ProductListMapper;
@@ -7,6 +8,7 @@ import com.example.farmaser.mapper.productMapper.ProductRequestMapper;
 import com.example.farmaser.mapper.productMapper.ProductResponseMapper;
 import com.example.farmaser.model.dto.productDto.ProductRequestDto;
 import com.example.farmaser.model.dto.productDto.ProductResponseDto;
+import com.example.farmaser.model.entity.ActionType;
 import com.example.farmaser.model.entity.ProductEntity;
 import com.example.farmaser.model.repository.ProductRepository;
 import com.example.farmaser.service.IProduct;
@@ -34,6 +36,9 @@ public class ProductService implements IProduct {
 
     @Autowired
     private ProductListMapper productListMapper;
+
+    @Autowired
+    private AuditHelper auditHelper;
 
     @Transactional(readOnly = true)
     @Override
@@ -80,6 +85,11 @@ public class ProductService implements IProduct {
         }
 
         ProductEntity savedProduct = productRepository.save(productEntity);
+        
+        // Registrar auditoría
+        auditHelper.log("Product", savedProduct.getId(), ActionType.CREATE, null,
+                auditHelper.toJsonString(savedProduct), "Producto creado: " + savedProduct.getName());
+        
         return productResponseMapper.productEntityToProductDto(savedProduct);
     }
 
@@ -106,6 +116,9 @@ public class ProductService implements IProduct {
             throw new BadRequestException("El stock no puede ser negativo");
         }
 
+        // Guardar valores antiguos para auditoría
+        String oldValue = auditHelper.toJsonString(existingProduct);
+        
         // Actualizar campos
         ProductEntity updatedEntity = productRequestMapper.productRequestDtoToProductEntity(productRequestDto);
         updatedEntity.setId(existingProduct.getId());
@@ -117,6 +130,11 @@ public class ProductService implements IProduct {
         }
 
         ProductEntity savedProduct = productRepository.save(updatedEntity);
+        
+        // Registrar auditoría
+        auditHelper.log("Product", savedProduct.getId(), ActionType.UPDATE, oldValue,
+                auditHelper.toJsonString(savedProduct), "Producto actualizado: " + savedProduct.getName());
+        
         return productResponseMapper.productEntityToProductDto(savedProduct);
     }
 
@@ -152,9 +170,16 @@ public class ProductService implements IProduct {
         ProductEntity productEntity = productRepository.findByBarcode(barcode)
                 .orElseThrow(() -> new NotFoundException("Producto con código de barras " + barcode + " no encontrado"));
 
+        // Guardar valores antiguos para auditoría
+        String oldValue = auditHelper.toJsonString(productEntity);
+
         // Soft delete: marcar como inactivo en lugar de eliminar físicamente
         productEntity.setActive(false);
-        productRepository.save(productEntity);
+        ProductEntity deletedProduct = productRepository.save(productEntity);
+        
+        // Registrar auditoría
+        auditHelper.log("Product", deletedProduct.getId(), ActionType.DELETE, oldValue,
+                auditHelper.toJsonString(deletedProduct), "Producto eliminado (soft delete): " + deletedProduct.getName());
     }
 
     @Transactional

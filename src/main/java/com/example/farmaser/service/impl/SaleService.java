@@ -1,5 +1,6 @@
 package com.example.farmaser.service.impl;
 
+import com.example.farmaser.config.AuditHelper;
 import com.example.farmaser.exceptions.BadRequestException;
 import com.example.farmaser.exceptions.NotFoundException;
 import com.example.farmaser.mapper.saleMapper.SaleItemRequestMapper;
@@ -7,6 +8,7 @@ import com.example.farmaser.mapper.saleMapper.SaleResponseMapper;
 import com.example.farmaser.model.dto.saleDto.SaleItemRequestDto;
 import com.example.farmaser.model.dto.saleDto.SaleRequestDto;
 import com.example.farmaser.model.dto.saleDto.SaleResponseDto;
+import com.example.farmaser.model.entity.ActionType;
 import com.example.farmaser.model.entity.*;
 import com.example.farmaser.model.repository.*;
 import com.example.farmaser.service.ISale;
@@ -46,6 +48,9 @@ public class SaleService implements ISale {
 
     @Autowired
     private SaleResponseMapper saleResponseMapper;
+
+    @Autowired
+    private AuditHelper auditHelper;
 
     @Transactional
     @Override
@@ -125,6 +130,10 @@ public class SaleService implements ISale {
         SaleEntity finalSale = saleRepository.findById(savedSale.getId())
                 .orElseThrow(() -> new NotFoundException("Venta no encontrada tras guardar"));
 
+        // Registrar auditoría
+        auditHelper.log("Sale", finalSale.getId(), ActionType.CREATE, null,
+                auditHelper.toJsonString(finalSale), "Venta creada: " + finalSale.getSaleNumber() + " - Total: $" + finalSale.getTotal());
+
         return saleResponseMapper.saleEntityToSaleResponseDto(finalSale);
     }
 
@@ -176,6 +185,9 @@ public class SaleService implements ISale {
             throw new BadRequestException("La venta ya está cancelada");
         }
 
+        // Guardar valores antiguos para auditoría
+        String oldValue = auditHelper.toJsonString(sale);
+
         // Revertir stock de todos los items
         List<SaleItemEntity> items = saleItemRepository.findBySale(sale);
         for (SaleItemEntity item : items) {
@@ -187,6 +199,10 @@ public class SaleService implements ISale {
         // Marcar venta como cancelada
         sale.setStatus(SaleStatus.CANCELLED);
         SaleEntity saved = saleRepository.save(sale);
+
+        // Registrar auditoría
+        auditHelper.log("Sale", saved.getId(), ActionType.CANCEL, oldValue,
+                auditHelper.toJsonString(saved), "Venta cancelada: " + saved.getSaleNumber());
 
         return saleResponseMapper.saleEntityToSaleResponseDto(saved);
     }

@@ -14,8 +14,9 @@
 - ✅ Sistema de reservas con expiración automática
 - ✅ Sistema de alertas de productos próximos a vencer
 - ✅ Sistema de roles granulares con permisos específicos
+- ✅ Sistema de auditoría y logs completo con integración automática en servicios principales
 
-El sistema permite registrar productos, categorizarlos, controlar su stock, gestionar clientes, procesar ventas con actualización automática de inventario, manejar reservas de productos con expiración automática y conversión en ventas, recibir alertas automáticas cuando productos están próximos a vencer, y gestionar usuarios con roles granulares que permiten control fino de permisos por funcionalidad.
+El sistema permite registrar productos, categorizarlos, controlar su stock, gestionar clientes, procesar ventas con actualización automática de inventario, manejar reservas de productos con expiración automática y conversión en ventas, recibir alertas automáticas cuando productos están próximos a vencer, gestionar usuarios con roles granulares que permiten control fino de permisos por funcionalidad, y registrar automáticamente todas las acciones críticas del sistema (productos, ventas, clientes, reservas) para auditoría y trazabilidad completa.
 
 ---
 
@@ -611,6 +612,132 @@ El sistema permite registrar productos, categorizarlos, controlar su stock, gest
 
 ---
 
+## ✅ Fase 5.2 - Sistema de Auditoría y Logs - COMPLETADA
+
+### Funcionalidad: Registro de Auditoría Completo ✅
+
+**Estado:** Completo e implementado
+
+**Funcionalidades implementadas:**
+
+- ✅ Sistema completo de registro de auditoría
+- ✅ Registro de acciones: CREATE, UPDATE, DELETE, LOGIN, LOGOUT, CANCEL, COMPLETE, CONFIRM, EXPIRE
+- ✅ Almacenamiento de valores anteriores y nuevos (JSON)
+- ✅ Registro de IP address del usuario
+- ✅ Consultas avanzadas por múltiples filtros
+- ✅ Historial completo de entidades
+- ✅ Permisos: Solo SUPER_ADMIN y MANAGER pueden consultar logs
+- ✅ Optimización con índices en base de datos
+
+**Entidad AuditLogEntity:**
+
+- Campos: `id`, `entityType` (String), `entityId` (Long), `action` (ActionType enum), `user` (ManyToOne), `oldValue` (TEXT), `newValue` (TEXT), `description` (TEXT), `ipAddress`, `timestamp`
+- Relación ManyToOne con UserEntity
+- Índices optimizados para búsquedas por: entityType+entityId, userId, action, timestamp
+
+**Enum ActionType:**
+
+- `CREATE` - Crear entidad
+- `UPDATE` - Actualizar entidad
+- `DELETE` - Eliminar entidad (soft delete)
+- `LOGIN` - Inicio de sesión
+- `LOGOUT` - Cierre de sesión
+- `CANCEL` - Cancelar operación
+- `COMPLETE` - Completar operación
+- `CONFIRM` - Confirmar operación
+- `EXPIRE` - Expirar (reservas, etc.)
+
+**Repositorio AuditLogRepository:**
+
+- Extiende `PagingAndSortingRepository` y `CrudRepository`
+- Métodos: `findByEntityType`, `findByEntityTypeAndEntityId`, `findByUserId`, `findByAction`, `findByTimestampBetween`, `findByEntityTypeAndTimestampBetween`, `findByUserIdAndTimestampBetween`, `findByEntityTypeAndEntityIdOrderByTimestampDesc`
+
+**Endpoints disponibles:**
+
+- `GET /api/v1/audit` - Listar todos los logs (paginado)
+- `GET /api/v1/audit/entity-type/{entityType}` - Logs por tipo de entidad
+- `GET /api/v1/audit/entity/{entityType}/{entityId}` - Logs de una entidad específica
+- `GET /api/v1/audit/entity/{entityType}/{entityId}/history` - Historial completo de una entidad
+- `GET /api/v1/audit/user/{userId}` - Logs de un usuario
+- `GET /api/v1/audit/action/{action}` - Logs por tipo de acción
+- `GET /api/v1/audit/date-range?start={date}&end={date}` - Logs por rango de fechas
+- `GET /api/v1/audit/entity-type/{entityType}/date-range` - Combinación tipo + fechas
+- `GET /api/v1/audit/user/{userId}/date-range` - Combinación usuario + fechas
+
+**Lógica de Negocio (AuditService):**
+
+1. **Registro de auditoría:**
+
+   - Recibe tipo de entidad, ID, acción, usuario, valores anteriores/nuevos, descripción, IP
+   - Valida que el usuario exista
+   - Almacena valores como JSON strings para facilitar comparación
+   - Registra timestamp automáticamente
+   - Manejo de errores sin interrumpir flujo principal
+
+2. **Consultas de auditoría:**
+   - Listado paginado de todos los logs
+   - Filtrado por tipo de entidad
+   - Filtrado por entidad específica (tipo + ID)
+   - Filtrado por usuario
+   - Filtrado por acción
+   - Filtrado por rango de fechas
+   - Combinaciones de filtros (tipo + fechas, usuario + fechas)
+   - Historial completo ordenado por fecha descendente
+
+**AuditHelper (Componente Helper):**
+
+- Clase helper para facilitar el registro desde servicios y controladores
+- Métodos:
+  - `log()` - Registra auditoría con HttpServletRequest (obtiene IP automáticamente)
+  - `log()` - Registra auditoría sin request
+  - `toJsonString()` - Convierte objetos a JSON string
+  - `createChangeDescription()` - Crea descripción resumida de cambios
+
+**Configuración de Seguridad:**
+
+- Endpoints `/api/v1/audit/**` restringidos a SUPER_ADMIN y MANAGER
+- Todos los endpoints requieren autenticación
+
+**Integración:**
+
+- ✅ **Integración completa en servicios principales:**
+  - ✅ **ProductService:** Registra CREATE, UPDATE, DELETE de productos
+  - ✅ **SaleService:** Registra CREATE y CANCEL de ventas
+  - ✅ **CustomerService:** Registra CREATE, UPDATE, DELETE de clientes
+  - ✅ **ReservationService:** Registra CREATE, CONFIRM, COMPLETE, CANCEL y EXPIRE de reservas
+- ✅ Todos los servicios usan `AuditHelper` para registro automático
+- ✅ Obtiene automáticamente el usuario desde SecurityContextHolder
+- ✅ Guarda valores anteriores y nuevos (JSON) para trazabilidad completa
+- ✅ No interrumpe el flujo principal si falla la auditoría (try-catch interno)
+- Ver `AUDITORIA_EJEMPLO.md` para ejemplos de uso adicionales
+- No requiere cambios en entidades existentes (opcional agregar campos createdBy/modifiedBy)
+
+**Características Importantes:**
+
+- **No intrusivo:** El registro de auditoría no bloquea operaciones principales
+- **Flexible:** Permite registrar cualquier tipo de entidad y acción
+- **Trazabilidad completa:** Registra quién, qué, cuándo y desde dónde
+- **Optimizado:** Índices en BD para consultas rápidas
+- **Escalable:** Paginación en todas las consultas
+- **Seguro:** Solo roles autorizados pueden consultar logs
+
+**Ejemplo de Uso (Ya implementado en servicios):**
+
+```java
+// En ProductService.save() - Ya implementado ✅
+auditHelper.log("Product", savedProduct.getId(), ActionType.CREATE, null,
+    auditHelper.toJsonString(savedProduct), "Producto creado: " + savedProduct.getName());
+
+// En ProductService.update() - Ya implementado ✅
+String oldValue = auditHelper.toJsonString(existingProduct);
+auditHelper.log("Product", savedProduct.getId(), ActionType.UPDATE, oldValue,
+    auditHelper.toJsonString(savedProduct), "Producto actualizado: " + savedProduct.getName());
+```
+
+**Nota:** Los servicios ProductService, SaleService, CustomerService y ReservationService ya tienen esta integración automática. El `AuditHelper` obtiene el usuario desde `SecurityContextHolder` automáticamente.
+
+---
+
 ### FASE 4: Sistema de Compras y Proveedores (Prioridad MEDIA)
 
 - Gestión de proveedores
@@ -620,7 +747,7 @@ El sistema permite registrar productos, categorizarlos, controlar su stock, gest
 ### FASE 5: Mejoras de Seguridad y Roles (Prioridad ALTA)
 
 - ✅ Roles más granulares (SUPER_ADMIN, MANAGER, CASHIER, WAREHOUSE, VIEWER) - **COMPLETADO**
-- ❌ Sistema de auditoría - **PENDIENTE**
+- ✅ Sistema de auditoría - **COMPLETADO**
 
 ### FASE 6: Reportes y Analytics (Prioridad MEDIA)
 
@@ -656,11 +783,13 @@ El sistema permite registrar productos, categorizarlos, controlar su stock, gest
 ```
 src/main/java/com/example/farmaser/
 ├── config/
+│   ├── AuditHelper.java              ✅ Fase 5.2
 │   ├── DataInitializer.java
 │   ├── ProductExpirationScheduler.java ✅ Alertas
 │   └── ReservationScheduler.java     ✅ Fase 3
 ├── controller/
 │   ├── AdminController.java
+│   ├── AuditController.java          ✅ Fase 5.2
 │   ├── CategoryController.java
 │   ├── CustomerController.java      ✅ Fase 2.1
 │   ├── AlertController.java         ✅ Alertas
@@ -674,6 +803,8 @@ src/main/java/com/example/farmaser/
 ├── mapper/
 │   ├── alertMapper/                  ✅ Alertas
 │   │   └── AlertResponseMapper.java
+│   ├── auditMapper/                  ✅ Fase 5.2
+│   │   └── AuditLogResponseMapper.java
 │   ├── categoryMapper/
 │   ├── customerMapper/               ✅ Fase 2.1
 │   │   ├── CustomerRequestMapper.java
@@ -693,6 +824,8 @@ src/main/java/com/example/farmaser/
 │   ├── dto/
 │   │   ├── alertDto/                 ✅ Alertas
 │   │   │   └── AlertResponseDto.java
+│   │   ├── auditDto/                ✅ Fase 5.2
+│   │   │   └── AuditLogResponseDto.java
 │   │   ├── categoryDto/
 │   │   ├── customerDto/              ✅ Fase 2.1
 │   │   │   ├── CustomerRequestDto.java
@@ -709,8 +842,10 @@ src/main/java/com/example/farmaser/
 │   │   ├── stockDto/
 │   │   └── userDto/
 │   ├── entity/
+│   │   ├── ActionType.java           ✅ Fase 5.2
 │   │   ├── AlertEntity.java          ✅ Alertas
 │   │   ├── AlertType.java            ✅ Alertas
+│   │   ├── AuditLogEntity.java       ✅ Fase 5.2
 │   │   ├── CategoryEntity.java
 │   │   ├── CustomerEntity.java       ✅ Fase 2.1
 │   │   ├── MovementType.java
@@ -727,6 +862,7 @@ src/main/java/com/example/farmaser/
 │   ├── payload/
 │   └── repository/
 │       ├── AlertRepository.java      ✅ Alertas
+│       ├── AuditLogRepository.java   ✅ Fase 5.2
 │       ├── CategoryRepository.java
 │       ├── CustomerRepository.java   ✅ Fase 2.1
 │       ├── ProductRepository.java
@@ -739,9 +875,10 @@ src/main/java/com/example/farmaser/
 ├── security/
 │   ├── filter/
 │   ├── jwt/
-│   └── SecurityConfig.java (actualizado para /api/v1/customers/**, /api/v1/sales/**, /api/v1/reservations/** y /api/v1/alerts/**)
+│   └── SecurityConfig.java (actualizado para /api/v1/customers/**, /api/v1/sales/**, /api/v1/reservations/**, /api/v1/alerts/** y /api/v1/audit/**)
 └── service/
     ├── IAlert.java                    ✅ Alertas
+    ├── IAudit.java                    ✅ Fase 5.2
     ├── ICustomer.java                 ✅ Fase 2.1
     ├── IProduct.java
     ├── IReservation.java              ✅ Fase 3
@@ -750,11 +887,12 @@ src/main/java/com/example/farmaser/
     ├── IUser.java
     └── impl/
         ├── AlertService.java          ✅ Alertas
+        ├── AuditService.java           ✅ Fase 5.2
         ├── CategoryService.java
-        ├── CustomerService.java       ✅ Fase 2.1
-        ├── ProductService.java
-        ├── ReservationService.java   ✅ Fase 3
-        ├── SaleService.java           ✅ Fase 2.2
+        ├── CustomerService.java       ✅ Fase 2.1 (con auditoría integrada)
+        ├── ProductService.java       ✅ (con auditoría integrada)
+        ├── ReservationService.java   ✅ Fase 3 (con auditoría integrada)
+        ├── SaleService.java           ✅ Fase 2.2 (con auditoría integrada)
         ├── StockMovementService.java
         ├── UserDetailsServiceImpl.java
         └── UserService.java
@@ -776,14 +914,21 @@ src/main/java/com/example/farmaser/
 
 ### Corto Plazo (Próximo Sprint):
 
-3. **Ampliar Roles (Fase 5.1)**
+3. ✅ **Ampliar Roles (Fase 5.1)** - **COMPLETADO**
 
-   - Agregar roles: PHARMACIST, SELLER, MANAGER, WAREHOUSE
-   - Actualizar permisos en SecurityConfig
+   - ✅ Roles granulares implementados: SUPER_ADMIN, MANAGER, CASHIER, WAREHOUSE, VIEWER
+   - ✅ Permisos actualizados en SecurityConfig
 
-4. **Reportes Básicos**
+4. ✅ **Sistema de Auditoría (Fase 5.2)** - **COMPLETADO**
+
+   - ✅ Sistema de auditoría completo implementado
+   - ✅ Integración automática en ProductService, SaleService, CustomerService, ReservationService
+   - ✅ Registro automático de todas las acciones críticas
+
+5. **Reportes Básicos (Fase 6)**
    - Reportes de ventas diarios/mensuales
-   - Dashboard básico
+   - Dashboard básico con métricas
+   - Integración con logs de auditoría para mostrar actividad de usuarios
 
 ### Medio Plazo:
 
@@ -846,15 +991,28 @@ src/main/java/com/example/farmaser/
    - Alertas distribuidas a todos los usuarios del sistema
    - Prevención de duplicados
    - Sistema de lectura de alertas
-8. **Tareas programadas:**
+8. **Sistema de Auditoría:**
+   - ✅ **Integración completa en servicios principales:**
+     - ProductService: CREATE, UPDATE, DELETE
+     - SaleService: CREATE, CANCEL
+     - CustomerService: CREATE, UPDATE, DELETE
+     - ReservationService: CREATE, CONFIRM, COMPLETE, CANCEL, EXPIRE
+   - Registro automático de todas las acciones críticas
+   - Consultas avanzadas por múltiples filtros
+   - Historial completo de entidades con valores anteriores/nuevos (JSON)
+   - Solo SUPER_ADMIN y MANAGER pueden consultar logs
+   - Obtiene usuario automáticamente desde SecurityContextHolder
+   - No interrumpe el flujo principal si falla la auditoría
+9. **Tareas programadas:**
    - Expiración automática de reservas cada hora (ReservationScheduler)
    - Generación de alertas de vencimiento cada día a las 8:00 AM (ProductExpirationScheduler)
    - Habilitado con @EnableScheduling en FarmaserApplication
-9. **Consideraciones futuras:**
-   - Implementar pruebas unitarias e integración
-   - Evaluar agregar Swagger/OpenAPI para documentación de API
-   - Considerar migraciones de BD con Flyway/Liquibase para producción
-   - Generación de recibos/tickets en PDF (pendiente)
+10. **Consideraciones futuras:**
+
+- Implementar pruebas unitarias e integración
+- Evaluar agregar Swagger/OpenAPI para documentación de API
+- Considerar migraciones de BD con Flyway/Liquibase para producción
+- Generación de recibos/tickets en PDF (pendiente)
 
 ---
 
@@ -960,7 +1118,52 @@ src/main/java/com/example/farmaser/
    - Analiza todos los productos activos con fecha de vencimiento
    - Crea alertas para todos los usuarios del sistema
 
+### Escenario: Consultar Logs de Auditoría
+
+**Nota:** La auditoría se registra automáticamente en todas las operaciones críticas:
+
+- ✅ Crear/Actualizar/Eliminar productos
+- ✅ Crear/Cancelar ventas
+- ✅ Crear/Actualizar/Eliminar clientes
+- ✅ Crear/Confirmar/Completar/Cancelar/Expirar reservas
+
+1. **Ver todos los logs:**
+
+   - `GET /api/v1/audit?page=0&size=20` - Listar todos los logs (paginado)
+   - Ordenados por fecha descendente (más recientes primero)
+
+2. **Ver historial de una entidad específica:**
+
+   - `GET /api/v1/audit/entity/Product/123/history` - Ver todos los cambios de un producto específico
+   - `GET /api/v1/audit/entity/Sale/456/history` - Ver todos los cambios de una venta específica
+
+3. **Filtrar por tipo de entidad:**
+
+   - `GET /api/v1/audit/entity-type/Product` - Ver todos los logs relacionados con productos
+   - `GET /api/v1/audit/entity-type/Sale` - Ver todos los logs relacionados con ventas
+
+4. **Filtrar por usuario:**
+
+   - `GET /api/v1/audit/user/5` - Ver todas las acciones de un usuario específico
+
+5. **Filtrar por acción:**
+
+   - `GET /api/v1/audit/action/CREATE` - Ver todas las creaciones
+   - `GET /api/v1/audit/action/DELETE` - Ver todas las eliminaciones
+
+6. **Filtrar por rango de fechas:**
+
+   - `GET /api/v1/audit/date-range?start=2024-01-01T00:00:00&end=2024-12-31T23:59:59` - Logs de un período específico
+
+7. **Combinar filtros:**
+   - `GET /api/v1/audit/entity-type/Product/date-range?start=2024-01-01T00:00:00&end=2024-12-31T23:59:59` - Productos modificados en un período
+   - `GET /api/v1/audit/user/5/date-range?start=2024-01-01T00:00:00&end=2024-12-31T23:59:59` - Acciones de un usuario en un período
+
+**Permisos requeridos:**
+
+- Solo usuarios con rol `SUPER_ADMIN` o `MANAGER` pueden consultar logs de auditoría
+
 ---
 
 **Última actualización:** Diciembre 2024
-**Estado general:** ✅ Fase 1 completa | ✅ Fase 2 completa | ✅ Fase 3 completa | ✅ Sistema de Alertas completo | ✅ Fase 5.1 (Roles Granulares) completa | ⏳ Listo para Fase 4 (Compras y Proveedores) o Fase 5.2 (Auditoría)
+**Estado general:** ✅ Fase 1 completa | ✅ Fase 2 completa | ✅ Fase 3 completa | ✅ Sistema de Alertas completo | ✅ Fase 5 completa (Roles Granulares + Auditoría) | ⏳ Listo para Fase 4 (Compras y Proveedores) o Fase 6 (Reportes y Analytics)

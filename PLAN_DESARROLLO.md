@@ -2,11 +2,12 @@
 
 ## 📊 Estado Actual del Proyecto
 
-### ✅ **Ya Implementado (FASE 1 COMPLETA + FASE 5.1):**
+### ✅ **Ya Implementado (FASE 1 COMPLETA + FASE 5 COMPLETA):**
 
 - ✅ Autenticación JWT (login/register)
 - ✅ Sistema de usuarios con roles granulares (SUPER_ADMIN, MANAGER, CASHIER, WAREHOUSE, VIEWER)
 - ✅ CRUD completo de usuarios
+- ✅ Sistema de auditoría y logs completo
 - ✅ **CRUD completo de productos** (ProductService + ProductController)
 - ✅ **Sistema de categorías completo** (CategoryEntity, Service, Controller)
 - ✅ **Control de stock completo** (StockMovementEntity, Service, Controller)
@@ -28,7 +29,7 @@
 - ❌ Notificaciones/alertas (FASE 7)
 - ❌ Reportes y estadísticas (FASE 6)
 - ✅ Ampliación de roles (FASE 5.1) - **COMPLETADO**
-- ❌ Auditoría (FASE 5.2) - **PENDIENTE**
+- ✅ Auditoría (FASE 5.2) - **COMPLETADO**
 
 ---
 
@@ -395,19 +396,38 @@ _Prioridad: ALTA | Tiempo estimado: 1-2 semanas_
 
 ---
 
-### **5.2 Auditoría y Logs**
+### **5.2 Auditoría y Logs** ✅ COMPLETADO
 
 **Objetivo:** Registrar quién hace qué y cuándo
 
 **Tareas:**
 
-- [ ] Agregar campos de auditoría a entidades críticas:
-  - [ ] `createdBy`, `modifiedBy`, `createdDate`, `modifiedDate`
-- [ ] Crear entidad `AuditLog`:
-  - `id`, `entityType`, `entityId`, `action`, `userId`, `oldValue`, `newValue`, `timestamp`
-- [ ] Crear servicio de auditoría
-- [ ] Implementar listeners JPA para auditoría automática
-- [ ] Crear endpoints para consultar logs de auditoría
+- [x] Crear entidad `AuditLog`:
+  - [x] `id`, `entityType`, `entityId`, `action`, `userId`, `oldValue`, `newValue`, `description`, `ipAddress`, `timestamp`
+- [x] Crear enum `ActionType` con tipos de acciones (CREATE, UPDATE, DELETE, LOGIN, LOGOUT, CANCEL, COMPLETE, CONFIRM, EXPIRE)
+- [x] Crear `AuditLogRepository` con métodos de búsqueda avanzados
+- [x] Crear DTOs y Mapper para AuditLog
+- [x] Crear `IAudit` (interfaz)
+- [x] Crear `AuditService` con lógica de negocio
+- [x] Crear `AuditController` con endpoints REST
+- [x] Crear `AuditHelper` para facilitar registro desde servicios
+- [x] Actualizar `SecurityConfig` para permisos de auditoría (solo SUPER_ADMIN y MANAGER)
+- [x] Crear documentación con ejemplos de uso (`AUDITORIA_EJEMPLO.md`)
+
+**Archivos creados:**
+
+- `ActionType.java` - Enum con tipos de acciones
+- `AuditLogEntity.java` - Entidad de auditoría con índices optimizados
+- `AuditLogRepository.java` - Repositorio con métodos de búsqueda
+- `AuditLogResponseDto.java` - DTO para respuestas
+- `AuditLogResponseMapper.java` - Mapper MapStruct
+- `IAudit.java` - Interfaz del servicio
+- `AuditService.java` - Implementación del servicio
+- `AuditController.java` - Controller con endpoints REST
+- `AuditHelper.java` - Helper para facilitar registro desde servicios
+- `AUDITORIA_EJEMPLO.md` - Documentación con ejemplos
+
+**Nota:** Los campos `createdBy` y `modifiedBy` en entidades críticas fueron marcados como opcionales para no requerir cambios masivos en entidades existentes. El sistema de auditoría está listo para integrarse en servicios usando `AuditHelper`.
 
 ---
 

@@ -1,5 +1,6 @@
 package com.example.farmaser.service.impl;
 
+import com.example.farmaser.config.AuditHelper;
 import com.example.farmaser.exceptions.BadRequestException;
 import com.example.farmaser.exceptions.NotFoundException;
 import com.example.farmaser.mapper.reservationMapper.ReservationRequestMapper;
@@ -7,6 +8,7 @@ import com.example.farmaser.mapper.reservationMapper.ReservationResponseMapper;
 import com.example.farmaser.model.dto.reservationDto.ReservationRequestDto;
 import com.example.farmaser.model.dto.reservationDto.ReservationResponseDto;
 import com.example.farmaser.model.dto.saleDto.SaleRequestDto;
+import com.example.farmaser.model.entity.ActionType;
 import com.example.farmaser.model.entity.*;
 import com.example.farmaser.model.repository.*;
 import com.example.farmaser.service.IReservation;
@@ -44,6 +46,9 @@ public class ReservationService implements IReservation {
 
     @Autowired
     private ISale saleService;
+
+    @Autowired
+    private AuditHelper auditHelper;
 
     private static final int RESERVATION_EXPIRATION_DAYS = 7; // Días para expirar una reserva
 
@@ -90,6 +95,11 @@ public class ReservationService implements IReservation {
                 .build();
 
         ReservationEntity saved = reservationRepository.save(reservation);
+        
+        // Registrar auditoría
+        auditHelper.log("Reservation", saved.getId(), ActionType.CREATE, null,
+                auditHelper.toJsonString(saved), "Reserva creada: " + saved.getReservationNumber() + " - Producto: " + saved.getProduct().getName() + " - Cantidad: " + saved.getQuantity());
+        
         return reservationResponseMapper.reservationEntityToReservationResponseDto(saved);
     }
 
@@ -143,8 +153,16 @@ public class ReservationService implements IReservation {
             throw new BadRequestException("La reserva ha expirado");
         }
 
+        // Guardar valores antiguos para auditoría
+        String oldValue = auditHelper.toJsonString(reservation);
+        
         reservation.setStatus(ReservationStatus.CONFIRMED);
         ReservationEntity saved = reservationRepository.save(reservation);
+        
+        // Registrar auditoría
+        auditHelper.log("Reservation", saved.getId(), ActionType.CONFIRM, oldValue,
+                auditHelper.toJsonString(saved), "Reserva confirmada: " + saved.getReservationNumber());
+        
         return reservationResponseMapper.reservationEntityToReservationResponseDto(saved);
     }
 
@@ -184,9 +202,16 @@ public class ReservationService implements IReservation {
         // Crear la venta (esto descontará el stock nuevamente, quedando correcto)
         saleService.create(saleDto, userEmail);
 
+        // Guardar valores antiguos para auditoría
+        String oldValue = auditHelper.toJsonString(reservation);
+        
         // Marcar reserva como completada
         reservation.setStatus(ReservationStatus.COMPLETED);
         ReservationEntity saved = reservationRepository.save(reservation);
+
+        // Registrar auditoría
+        auditHelper.log("Reservation", saved.getId(), ActionType.COMPLETE, oldValue,
+                auditHelper.toJsonString(saved), "Reserva completada: " + saved.getReservationNumber() + " - Convertida en venta");
 
         return reservationResponseMapper.reservationEntityToReservationResponseDto(saved);
     }
@@ -210,9 +235,16 @@ public class ReservationService implements IReservation {
         product.setStock(product.getStock() + reservation.getQuantity());
         productRepository.save(product);
 
+        // Guardar valores antiguos para auditoría
+        String oldValue = auditHelper.toJsonString(reservation);
+        
         // Marcar como cancelada
         reservation.setStatus(ReservationStatus.CANCELLED);
         ReservationEntity saved = reservationRepository.save(reservation);
+
+        // Registrar auditoría
+        auditHelper.log("Reservation", saved.getId(), ActionType.CANCEL, oldValue,
+                auditHelper.toJsonString(saved), "Reserva cancelada: " + saved.getReservationNumber() + " - Stock liberado");
 
         return reservationResponseMapper.reservationEntityToReservationResponseDto(saved);
     }
@@ -228,6 +260,9 @@ public class ReservationService implements IReservation {
                 .findByExpirationDateBeforeAndStatus(now, ReservationStatus.CONFIRMED));
 
         for (ReservationEntity reservation : expiredReservations) {
+            // Guardar valores antiguos para auditoría
+            String oldValue = auditHelper.toJsonString(reservation);
+            
             // Liberar stock de las reservas expiradas
             ProductEntity product = reservation.getProduct();
             product.setStock(product.getStock() + reservation.getQuantity());
@@ -235,7 +270,11 @@ public class ReservationService implements IReservation {
 
             // Marcar como expirada
             reservation.setStatus(ReservationStatus.EXPIRED);
-            reservationRepository.save(reservation);
+            ReservationEntity saved = reservationRepository.save(reservation);
+            
+            // Registrar auditoría
+            auditHelper.log("Reservation", saved.getId(), ActionType.EXPIRE, oldValue,
+                    auditHelper.toJsonString(saved), "Reserva expirada automáticamente: " + saved.getReservationNumber() + " - Stock liberado");
         }
     }
 

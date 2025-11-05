@@ -1,5 +1,6 @@
 package com.example.farmaser.service.impl;
 
+import com.example.farmaser.config.AuditHelper;
 import com.example.farmaser.exceptions.BadRequestException;
 import com.example.farmaser.exceptions.NotFoundException;
 import com.example.farmaser.mapper.customerMapper.CustomerListMapper;
@@ -7,6 +8,7 @@ import com.example.farmaser.mapper.customerMapper.CustomerRequestMapper;
 import com.example.farmaser.mapper.customerMapper.CustomerResponseMapper;
 import com.example.farmaser.model.dto.customerDto.CustomerRequestDto;
 import com.example.farmaser.model.dto.customerDto.CustomerResponseDto;
+import com.example.farmaser.model.entity.ActionType;
 import com.example.farmaser.model.entity.CustomerEntity;
 import com.example.farmaser.model.repository.CustomerRepository;
 import com.example.farmaser.service.ICustomer;
@@ -34,6 +36,9 @@ public class CustomerService implements ICustomer {
 
     @Autowired
     private CustomerListMapper customerListMapper;
+
+    @Autowired
+    private AuditHelper auditHelper;
 
     @Transactional(readOnly = true)
     @Override
@@ -70,6 +75,11 @@ public class CustomerService implements ICustomer {
             entity.setActive(true);
         }
         CustomerEntity saved = customerRepository.save(entity);
+        
+        // Registrar auditoría
+        auditHelper.log("Customer", saved.getId(), ActionType.CREATE, null,
+                auditHelper.toJsonString(saved), "Cliente creado: " + saved.getName() + " " + saved.getLastname() + " (DNI: " + saved.getDni() + ")");
+        
         return customerResponseMapper.customerEntityToCustomerResponseDto(saved);
     }
 
@@ -90,6 +100,9 @@ public class CustomerService implements ICustomer {
             throw new BadRequestException("Ya existe otro cliente con el email: " + requestDto.getEmail());
         }
 
+        // Guardar valores antiguos para auditoría
+        String oldValue = auditHelper.toJsonString(existing);
+
         CustomerEntity updated = customerRequestMapper.customerRequestDtoToCustomerEntity(requestDto);
         updated.setId(existing.getId());
         updated.setCreationDate(existing.getCreationDate());
@@ -98,6 +111,11 @@ public class CustomerService implements ICustomer {
         }
 
         CustomerEntity saved = customerRepository.save(updated);
+        
+        // Registrar auditoría
+        auditHelper.log("Customer", saved.getId(), ActionType.UPDATE, oldValue,
+                auditHelper.toJsonString(saved), "Cliente actualizado: " + saved.getName() + " " + saved.getLastname() + " (DNI: " + saved.getDni() + ")");
+        
         return customerResponseMapper.customerEntityToCustomerResponseDto(saved);
     }
 
@@ -150,8 +168,16 @@ public class CustomerService implements ICustomer {
     public void delete(Long id) {
         CustomerEntity entity = customerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Cliente con id " + id + " no encontrado"));
+        
+        // Guardar valores antiguos para auditoría
+        String oldValue = auditHelper.toJsonString(entity);
+        
         entity.setActive(false);
-        customerRepository.save(entity);
+        CustomerEntity deleted = customerRepository.save(entity);
+        
+        // Registrar auditoría
+        auditHelper.log("Customer", deleted.getId(), ActionType.DELETE, oldValue,
+                auditHelper.toJsonString(deleted), "Cliente eliminado (soft delete): " + deleted.getName() + " " + deleted.getLastname() + " (DNI: " + deleted.getDni() + ")");
     }
 }
 
